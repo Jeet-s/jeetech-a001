@@ -1,0 +1,15 @@
+{
+  "_note": "Factory-owned. Written per build from the app's capabilities; empty urls = capability off.",
+  "app": "com.jeetech.a001",
+  "apiUrl": "",
+  "authUrl": "",
+  "anonKey": "",
+  "ai": false,
+  "cloud": {
+    "enabled": false,
+    "mode": "backup",
+    "proOnly": false,
+    "email": true
+  },
+  "deleteAccountUrl": ""
+}

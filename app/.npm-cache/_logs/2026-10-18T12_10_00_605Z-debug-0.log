@@ -1,0 +1,49 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/.npmrc
+5 silly config load:file:/Users/jagjeetsingh/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm install @expo-google-fonts/inter@^0.4.1
+8 verbose argv "install" "--no-audit" "--no-fund" "--loglevel" "error" "--no-save" "@expo-google-fonts/inter@^0.4.1"
+9 verbose logfile logs-max:10 dir:/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/.npm-cache/_logs/2026-10-18T12_10_00_605Z-
+10 verbose logfile /Users/jagjeetsingh/ai-app-factory/runtimes/react-native/.npm-cache/_logs/2026-10-18T12_10_00_605Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+14 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+15 silly idealTree buildDeps
+16 silly fetch manifest @expo-google-fonts/inter@^0.4.1
+17 silly packumentCache full:https://registry.npmjs.org/@expo-google-fonts%2finter cache-miss
+18 http fetch GET 200 https://registry.npmjs.org/npm 239ms
+19 http fetch GET 200 https://registry.npmjs.org/@expo-google-fonts%2finter 774ms (cache miss)
+20 silly packumentCache full:https://registry.npmjs.org/@expo-google-fonts%2finter set size:undefined disposed:false
+21 silly placeDep ROOT @expo-google-fonts/inter@0.4.2 OK for: app-runtime-rn@1.0.0 want: ^0.4.1
+22 silly reify mark retired [
+22 silly reify   '/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/node_modules/@expo-google-fonts/fredoka'
+22 silly reify ]
+23 silly reify mark retired [
+23 silly reify   '/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/node_modules/@expo-google-fonts/nunito'
+23 silly reify ]
+24 silly reify moves {
+24 silly reify   '/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/node_modules/@expo-google-fonts/fredoka': '/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/node_modules/@expo-google-fonts/.fredoka-KJP0VpIK',
+24 silly reify   '/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/node_modules/@expo-google-fonts/nunito': '/Users/jagjeetsingh/ai-app-factory/runtimes/react-native/node_modules/@expo-google-fonts/.nunito-GUFbVBV8'
+24 silly reify }
+25 http cache @expo-google-fonts/inter@https://registry.npmjs.org/@expo-google-fonts/inter/-/inter-0.4.2.tgz 0ms (cache hit)
+26 silly tarball no local data for @expo-google-fonts/inter@https://registry.npmjs.org/@expo-google-fonts/inter/-/inter-0.4.2.tgz. Extracting by manifest.
+27 http fetch GET 200 https://registry.npmjs.org/@expo-google-fonts/inter/-/inter-0.4.2.tgz 716ms (cache miss)
+28 silly ADD node_modules/@expo-google-fonts/inter
+29 silly REMOVE node_modules/@expo-google-fonts/nunito
+30 silly REMOVE node_modules/@expo-google-fonts/fredoka
+31 verbose cwd /Users/jagjeetsingh/ai-app-factory/runtimes/react-native
+32 verbose os Darwin 24.6.0
+33 verbose node v22.20.0
+34 verbose npm  v10.9.3
+35 notice
+35 notice New major version of npm available! 10.9.3 -> 12.2.0
+35 notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+35 notice To update run: npm install -g npm@12.2.0
+35 notice  { force: true, [Symbol(proc-log.meta)]: true }
+36 verbose exit 0
+37 info ok

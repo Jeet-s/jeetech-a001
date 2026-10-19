@@ -1,0 +1,5 @@
+{
+  "_note": "Factory-owned. url is set per build from TELEMETRY_URL; empty = events only go to the device log (QA reads them).",
+  "url": "",
+  "app": "com.jeetech.a001"
+}

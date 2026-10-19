@@ -1,0 +1,43 @@
+{
+  "name": "app-runtime-rn",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "typecheck": "tsc --noEmit",
+    "prebuild:android": "expo prebuild --platform android --no-install",
+    "build:android": "cd android && ./gradlew bundleRelease",
+    "validate": "tsx scripts/validate.ts",
+    "journeys": "tsx scripts/journeys.ts"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~58.0.14",
+    "expo-build-properties": "~58.0.11",
+    "expo-iap": "^6.1.0",
+    "expo-status-bar": "~58.0.3",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-google-mobile-ads": "^17.3.0",
+    "@shopify/react-native-skia": "2.14.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-worklets": "0.13.0",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "expo-haptics": "~58.0.7",
+    "expo-audio": "~58.0.9",
+    "expo-font": "~58.0.8",
+    "expo-linear-gradient": "~58.0.3",
+    "expo-splash-screen": "~58.0.10",
+    "@expo-google-fonts/inter": "^0.4.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "~6.0.3",
+    "tsx": "^4.20.0",
+    "@types/node": "^22.0.0"
+  },
+  "comment": "App base runtime (Expo SDK 58): a product-grade UI kit (src/ui), on-device persistence (src/modules/persist.ts), Skia + Reanimated + Gesture Handler, haptics and subtle sounds (src/audio). Apps are built ON this kit \u2014 never with raw unstyled Views/system fonts. src/modules/{ads,iap,store,analytics} are the monetization + telemetry layer and must stay. scripts/journeys.ts is factory-owned."
+}

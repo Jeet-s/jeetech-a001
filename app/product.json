@@ -1,0 +1,9 @@
+{
+  "title": "Envelope Mini — Manual Budget Envelopes",
+  "package": "com.appfactory.envelopeminimanualbudgetenvelopes",
+  "coreFeature": "create an envelope and add an expense or deposit in one tap from the envelope list",
+  "screens": ["Onboarding", "Today", "Stats", "Settings", "Pro"],
+  "monetization": { "proUnlockIap": true, "removeAdsIap": true, "banner": true, "interstitials": false },
+  "analyticsEvents": ["app_open", "onboarding_done", "core_action", "screen_view", "paywall_view", "iap_purchase"],
+  "_note": "Filled by the Claude Code builder from the PRD + asset manifest. The factory checks this file exists to recognise a workspace."
+}

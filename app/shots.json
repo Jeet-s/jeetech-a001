@@ -1,0 +1,11 @@
+{
+  "_note": "Store screenshot scenes. Each id is opened with <scheme>://shot/<id> and captured on an emulator, rendering the REAL screens with realistic seeded data (src/screenshots.tsx).",
+  "scenes": [
+    { "id": "envelopes", "caption": "Every envelope at a glance" },
+    { "id": "add", "caption": "Add an expense in seconds" },
+    { "id": "detail", "caption": "See where each dollar goes" },
+    { "id": "reports", "caption": "Clear spending insights" },
+    { "id": "recurring", "caption": "Bills post on their own" },
+    { "id": "pro", "caption": "Private, offline, no ads" }
+  ]
+}

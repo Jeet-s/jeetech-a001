@@ -1,0 +1,35 @@
+{
+  "aso": {
+    "primary": "budget planner free app",
+    "problems": [],
+    "secondary": [
+      "envelope budget app",
+      "manual budget tracker"
+    ]
+  },
+  "title": "Envelope Mini - Budget Planner",
+  "category": "Finance",
+  "keywords": [
+    "budget planner free app",
+    "envelope budget app",
+    "manual budget tracker",
+    "budget planner offline",
+    "budget planner money tracker",
+    "envelope budgeting",
+    "envelope budget",
+    "envelope budget free",
+    "budget planner"
+  ],
+  "release_notes": "New: Envelope Mini v1.0\n- One-tap add from envelope list with inline calculator\n- Custom envelopes and sub-envelopes with icons/colors\n- Multiple accounts and true transfers\n- Recurring engine with flexible schedules and edit scopes\n- Rollover budgets and paycheck-cycle periods\n- Charts with custom ranges and drill-down\n- CSV/XLSX import and export (local only)\n- Undo/redo, edit history, security lock\n- Quick split, duplicate, labels, themes, local notifications\n- Pro: advanced reports, bulk edit, PDF export, multiple books, advanced themes",
+  "content_rating": "Everyone",
+  "full_description": "Envelope Mini is a budget planner free app built for speed, privacy, and clarity. It’s an envelope budget app that puts you in control with quick manual entry, reliable rollover math, and no bank linking.\n\nWhy Envelope Mini\n- Open → tap an envelope → add expense or deposit → done. Manual budget tracker flow in under three taps with an inline calculator.\n- Clear envelope bars show allocated, spent, and remaining at a glance. Rollover per category is rock‑solid and visible.\n- Works fully offline. No account required. Your data stays on the device. Export anytime via CSV/XLSX or PDF (Pro).\n\nCore job, done simply\n- Envelope list with one‑tap + Expense / + Deposit per envelope\n- Inline calculator supporting +, −, ×, ÷, and %\n- Custom envelopes and optional sub‑envelopes with icons and colors\n- Multiple accounts (cash, debit, credit) and true transfers that never double‑count\n- Recurring transactions with flexible schedules and edit scopes (this, this+future, all)\n- Rollover budgets per envelope with clear carry‑in and carry‑out\n- Paycheck‑cycle budgeting (monthly or custom, including biweekly)\n- Charts for cash flow and category spend with custom date ranges and drill‑down\n- Undo/redo and per‑transaction edit history for confidence\n- Security lock with PIN and biometric unlock\n- CSV/XLSX import and export with a forgiving mapping wizard (local only)\n- Local notifications for due bills, end‑of‑period review, and gentle logging nudges\n- Quick duplicate and quick split for fast, accurate entry\n- Labels/tags and filters for focused reports\n- Themes and dark mode with accessible contrast\n\nPrivate by default\n- Works offline, no signup\n- Data lives on your device\n- Exports you control (CSV/XLSX, and PDF in Pro)\n\nWhat’s free\n- All core budgeting: envelopes, rollover, paycheck cycles\n- Recurring engine with calendar preview and edit scopes\n- Multiple accounts and transfers\n- Charts with custom ranges and drill‑down\n- CSV/XLSX import/export (local)\n- Security lock, themes (light/dark), labels, quick split/duplicate\n- Local notifications and reminders\n\nGo Pro (one‑time unlock)\n- Advanced reports (multi‑month compare, envelope drill exports)\n- Bulk edit operations for faster cleanup\n- PDF exports for budgets and reports\n- Multiple books (separate budgets)\n- Advanced themes\n\nDesigned for speed\n- Add expenses in seconds from the envelope list\n- Smart defaults remember your last account and method\n- Snappy performance even with large histories\n\nMade for manual budgeters\n- If you prefer an envelope budget app without bank linking, this manual budget tracker keeps things trustworthy and fast. Envelope budgeting stays clear with explicit math and dependable rollover.\n\nGet started\n- Create sample envelopes or start from scratch, set your amounts, and log your first expense in under a minute. Keep control of your money with a budget planner free app that respects your time and privacy.\n\nNote: Cloud sync is optional and not required. Data is stored on your device, and any sync uses encryption in transit and at rest.",
+  "screenshots_plan": [
+    "One-tap envelope entry",
+    "Clear rollover and period",
+    "Flexible recurring with scopes",
+    "Charts with custom ranges",
+    "CSV/XLSX import & export",
+    "Offline. No account needed"
+  ],
+  "short_description": "Fast envelope budget app and manual budget tracker. Private, offline."
+}

@@ -1,0 +1,105 @@
+{
+  "style": "Premium, modern, and calm visual language built from precise geometric primitives, soft-rounded edges, and subtle material layering; flat by default with a restrained 5–8% vertical luminance shift for depth, thin clean outlines, and crisp occlusion shadows (8–12 px blur, 10–15% opacity) that sit close to objects. Surfaces are matte and paper-like, envelopes feel like neatly folded card with micro-bevels, and budget bars read as smooth acrylic chips. Lighting is soft frontal-ambient with faint top falloff; no harsh gloss, no skeuomorphism. Composition favors balanced negative space, centered heroes, and gentle motion cues implied by hover/stacking. Mood is focused, adult, and trustworthy; color accents are sparing (emerald for success, amber for caution) against slate/navy neutrals to maintain WCAG contrast and harmony with the UI.",
+  "palette": [
+    "#0F172A",
+    "#1E293B",
+    "#F1F5F9",
+    "#10B981",
+    "#F59E0B",
+    "#94A3B8"
+  ],
+  "ui_palette": {
+    "primary": "#0F172A",
+    "primaryDark": "#0B1223",
+    "primarySoft": "#1E293B",
+    "accent": "#10B981",
+    "success": "#10B981",
+    "warning": "#F59E0B",
+    "bg": "#F8FAFC",
+    "surface": "#FFFFFF",
+    "ink": "#0F172A",
+    "inkSoft": "#475569"
+  },
+  "assets": [
+    {
+      "id": "appicon_primary",
+      "kind": "ui",
+      "file": "appicon_primary.png",
+      "usage": "App store icon: rounded-square tile with central envelope glyph and subtle top-to-bottom luminance shift.",
+      "width": 512,
+      "height": 512
+    },
+    {
+      "id": "splash_logo",
+      "kind": "ui",
+      "file": "splash_logo.png",
+      "usage": "Splash screen centered mark over solid background; used as brand glyph.",
+      "width": 512,
+      "height": 384
+    },
+    {
+      "id": "onboarding_1_welcome",
+      "kind": "illustration",
+      "file": "onboarding_1_welcome.png",
+      "usage": "Onboarding screen 1 hero visual (Welcome).",
+      "width": 431,
+      "height": 512
+    },
+    {
+      "id": "onboarding_2_budgets",
+      "kind": "illustration",
+      "file": "onboarding_2_budgets.png",
+      "usage": "Onboarding screen 2 hero visual (Set budgets & rollover).",
+      "width": 450,
+      "height": 512
+    },
+    {
+      "id": "onboarding_3_speed_entry",
+      "kind": "illustration",
+      "file": "onboarding_3_speed_entry.png",
+      "usage": "Onboarding screen 3 hero visual (Fast manual entry & calculator).",
+      "width": 416,
+      "height": 512
+    },
+    {
+      "id": "empty_state_envelopes",
+      "kind": "empty_state",
+      "file": "empty_state_envelopes.png",
+      "usage": "Empty state for the Envelope List.",
+      "width": 503,
+      "height": 512
+    },
+    {
+      "id": "empty_state_transactions",
+      "kind": "empty_state",
+      "file": "empty_state_transactions.png",
+      "usage": "Empty state for the Transactions list.",
+      "width": 512,
+      "height": 486
+    },
+    {
+      "id": "empty_state_reports",
+      "kind": "empty_state",
+      "file": "empty_state_reports.png",
+      "usage": "Empty state for the Charts/Reports view.",
+      "width": 512,
+      "height": 505
+    },
+    {
+      "id": "pro_sheet_hero",
+      "kind": "hero",
+      "file": "pro_sheet_hero.png",
+      "usage": "Hero image for the Pro/Plus sheet.",
+      "width": 1080,
+      "height": 720
+    },
+    {
+      "id": "ui_badge_achieved",
+      "kind": "ui",
+      "file": "ui_badge_achieved.png",
+      "usage": "Small achievement/completion badge used in-app.",
+      "width": 499,
+      "height": 512
+    }
+  ]
+}

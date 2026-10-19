@@ -1,0 +1,4 @@
+{
+  "_note": "AI features this app uses (only when the factory enabled AI). The factory registers these prompts on its server — the app sends only {feature, input}. Each system prompt says exactly what to do with the input and what to return.",
+  "features": {}
+}

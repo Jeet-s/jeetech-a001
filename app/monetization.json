@@ -1,0 +1,27 @@
+{
+  "_note": "Overwritten per app by the factory from its Play slot. These defaults are Google's public TEST ids, so unassigned builds never serve live ads. \"subscriptions\" is filled only when the app has AI or cloud sync.",
+  "admob": {
+    "appId": "ca-app-pub-5054561222360217~7264376296",
+    "banner": "ca-app-pub-5054561222360217/3572718309",
+    "rewarded": "ca-app-pub-5054561222360217/5348834409",
+    "interstitial": "ca-app-pub-5054561222360217/5166580589",
+    "test": false
+  },
+  "iap": [
+    {
+      "sku": "pro_unlock",
+      "title": "Pro (lifetime)",
+      "description": "Unlock every Pro feature forever and remove ads. One-time purchase.",
+      "priceUsd": 4.99,
+      "consumable": false
+    },
+    {
+      "sku": "remove_ads",
+      "title": "Remove Ads",
+      "description": "Remove all ads forever.",
+      "priceUsd": 1.99,
+      "consumable": false
+    }
+  ],
+  "subscriptions": []
+}

@@ -1,7 +1,9 @@
-# JeeTech a001
+# Envelope Mini - Budget Planner
 
-Play package `com.jeetech.a001`. Built and maintained by the AI App Factory.
+Fast envelope budget app and manual budget tracker. Private, offline.
 
-- `docs/` — GitHub Pages: landing page, privacy policy, terms
-- `app/` — app source as shipped
-- `store/` — store listing + graphics
+- Google Play: https://play.google.com/store/apps/details?id=com.jeetech.a001
+- Privacy policy: https://jeet-s.github.io/jeetech-a001/privacy.html
+- Current version: 1.0.1
+
+`app/` is the Expo (React Native) source as shipped; `store/` holds the listing and graphics.
