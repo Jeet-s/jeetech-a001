@@ -4,7 +4,7 @@ import Animated, { Easing, FadeInDown, FadeOutDown, useAnimatedStyle, useSharedV
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { Icon, type IconName } from "./Icon";
-import { palette, radius, shadowStrong, space, springs, type } from "./theme";
+import { palette, radius, shadowStrong, space, springs, type, isDark } from "./theme";
 import { play } from "../audio/sfx";
 
 /** Bottom sheet over a dimmed backdrop — for add/edit forms, pickers and the Pro offer. */
@@ -22,7 +22,9 @@ export function Sheet({ visible, title, onClose, children }: { visible: boolean;
       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: palette.scrim }, dim]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close" />
       </Animated.View>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.bottom} pointerEvents="box-none">
+      {/* "padding" on Android too: a Modal doesn't resize with the keyboard, so without it the keyboard covered the
+          sheet's fields and buttons (Band Up's sign-in "Send code", 2026-10-25). */}
+      <KeyboardAvoidingView behavior="padding" style={styles.bottom} pointerEvents="box-none">
         <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }, sheet]}>
           <View style={styles.grabber} />
           {title ? (
@@ -34,6 +36,7 @@ export function Sheet({ visible, title, onClose, children }: { visible: boolean;
           {children}
         </Animated.View>
       </KeyboardAvoidingView>
+      {visible ? <ToastHost bottom={insets.bottom + 24} /> : null}
     </Modal>
   );
 }
@@ -70,11 +73,13 @@ export function EmptyState({
 }
 
 type ToastMsg = { id: number; text: string; action?: { label: string; onPress: () => void } };
-let push: ((m: Omit<ToastMsg, "id">) => void) | null = null;
+// Every mounted ToastHost shows the toast: App's host AND the one inside an open Sheet (a Modal covers App's host, so
+// confirmations from sheet actions were invisible — "taps had no visible effect" in QA).
+const hosts = new Set<(m: Omit<ToastMsg, "id">) => void>();
 
-/** Show a short confirmation ("Saved", "Deleted · Undo"). Mount <ToastHost/> once in App. */
+/** Show a short confirmation ("Saved", "Deleted · Undo"). App mounts <ToastHost/>; every Sheet has its own. */
 export function toast(text: string, action?: ToastMsg["action"]): void {
-  push?.({ text, action });
+  for (const h of hosts) h({ text, action });
 }
 
 export function ToastHost({ bottom = 96 }: { bottom?: number }) {
@@ -82,20 +87,21 @@ export function ToastHost({ bottom = 96 }: { bottom?: number }) {
   useEffect(() => {
     let n = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
-    push = (m) => {
+    const host = (m: Omit<ToastMsg, "id">) => {
       if (timer) clearTimeout(timer);
       setMsg({ ...m, id: ++n });
       timer = setTimeout(() => setMsg(null), m.action ? 5000 : 2200);
     };
+    hosts.add(host);
     return () => {
-      push = null;
+      hosts.delete(host);
       if (timer) clearTimeout(timer);
     };
   }, []);
   if (!msg) return null;
   return (
     <Animated.View key={msg.id} entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(160)} style={[styles.toast, { bottom }]} accessibilityLiveRegion="polite">
-      <Text style={[type.bodyStrong, { color: "#fff", flex: 1 }]}>{msg.text}</Text>
+      <Text style={[type.bodyStrong, { color: isDark ? palette.bg : "#fff", flex: 1 }]}>{msg.text}</Text>
       {msg.action ? (
         <Pressable
           accessibilityRole="button"
@@ -106,7 +112,7 @@ export function ToastHost({ bottom = 96 }: { bottom?: number }) {
             setMsg(null);
           }}
         >
-          <Text style={[type.button, { color: "#A5B4FC" }]}>{msg.action.label}</Text>
+          <Text style={[type.button, { color: isDark ? palette.primaryDark : palette.primarySoft }]}>{msg.action.label}</Text>
         </Pressable>
       ) : null}
     </Animated.View>

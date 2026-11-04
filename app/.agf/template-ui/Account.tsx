@@ -62,6 +62,11 @@ export function AccountSheet({
     }
   };
 
+  // The web deletion link lives with the signed-in actions only: under "Send code" it caught taps meant for the button
+  // and sent users to the browser mid sign-in (2026-10-25).
+  const emailOk = /^\S+@\S+\.\S+$/.test(email);
+  const sendCode = () => run(async () => { await cloud.signIn(email); setStep("code"); });
+
   return (
     <Sheet visible={visible} title={signedIn ? "Your account" : "Keep your data safe"} onClose={onClose}>
       {signedIn ? (
@@ -70,6 +75,11 @@ export function AccountSheet({
             Signed in as <Text style={type.bodyStrong}>{user!.email}</Text>. Your data is backed up and available when you sign in on another phone.
           </Text>
           <Button label="Sign out" variant="secondary" onPress={() => run(async () => { await cloud.signOut(); toast("Signed out"); onClose(); })} />
+          {cloud.deleteAccountUrl ? (
+            <Text style={[type.caption, { textAlign: "center", marginTop: space.sm }]} onPress={() => Linking.openURL(cloud.deleteAccountUrl)} accessibilityRole="link">
+              Delete your account from the web
+            </Text>
+          ) : null}
           <Button
             label="Delete account"
             variant="danger"
@@ -91,19 +101,24 @@ export function AccountSheet({
           <Text style={[type.body, { color: palette.inkSoft }]}>
             Sign in with your email to back up your data and use it on another phone. No password — we email you a code.
           </Text>
-          <TextField label="Email" placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" autoComplete="email" value={email} onChangeText={setEmail} error={error} />
-          <Button
-            label="Send code"
-            size="lg"
-            loading={busy}
-            disabled={!/^\S+@\S+\.\S+$/.test(email)}
-            onPress={() => run(async () => { await cloud.signIn(email); setStep("code"); })}
+          <TextField
+            label="Email"
+            placeholder="you@example.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            value={email}
+            onChangeText={setEmail}
+            error={error}
+            returnKeyType="send"
+            onSubmitEditing={() => emailOk && sendCode()}
           />
+          <Button label="Send code" size="lg" loading={busy} disabled={!emailOk} onPress={sendCode} />
         </View>
       ) : (
         <View style={{ gap: space.md }}>
           <Text style={type.body}>Enter the 6-digit code we sent to {email}.</Text>
-          <TextField label="Code" placeholder="123456" keyboardType="number-pad" maxLength={8} value={code} onChangeText={setCode} error={error} autoFocus />
+          <TextField label="Code" placeholder="123456" keyboardType="number-pad" maxLength={8} value={code} onChangeText={setCode} error={error} autoFocus returnKeyType="done" />
           <Button
             label="Sign in"
             size="lg"
@@ -123,11 +138,6 @@ export function AccountSheet({
           <Button label="Use a different email" variant="ghost" sound={null} onPress={() => setStep("email")} style={{ borderWidth: 0 }} />
         </View>
       )}
-      {cloud.deleteAccountUrl ? (
-        <Text style={[type.caption, { textAlign: "center" }]} onPress={() => Linking.openURL(cloud.deleteAccountUrl)} accessibilityRole="link">
-          Delete your account from the web
-        </Text>
-      ) : null}
     </Sheet>
   );
 }

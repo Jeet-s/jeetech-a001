@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useDerivedValue, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
 import { Canvas, Group, Path, Skia } from "@shopify/react-native-skia";
@@ -6,7 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { categorical, gradients, palette, space, type } from "./theme";
 
 /** Animated circular progress (0..1) with a centred label. */
-export function ProgressRing({
+export const ProgressRing = memo(function ProgressRing({
   value,
   size = 120,
   stroke = 12,
@@ -49,11 +49,11 @@ export function ProgressRing({
       </View>
     </View>
   );
-}
+});
 
 /** Category donut: colored arcs sized by share, with a total in the middle.
  *  Uses the same envelope colors as the list so the mapping reads instantly. */
-export function Donut({
+export const Donut = memo(function Donut({
   slices,
   size = 148,
   stroke = 22,
@@ -100,7 +100,7 @@ export function Donut({
       </View>
     </View>
   );
-}
+});
 
 function AnimatedArc({ circle, color, start, end, stroke, p }: { circle: ReturnType<typeof Skia.Path.MakeFromSVGString> | any; color: string; start: number; end: number; stroke: number; p: SharedValue<number> }) {
   // Grow each arc from its own start as the single progress value sweeps 0→1.

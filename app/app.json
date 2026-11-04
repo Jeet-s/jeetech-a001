@@ -1,20 +1,39 @@
 {
   "expo": {
-    "name": "Envelope Mini — Manual Budget Envelopes",
+    "name": "Envelope Mini",
     "slug": "envelope-mini-manual-budget-envelopes",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "orientation": "portrait",
     "android": {
       "package": "com.jeetech.a001",
-      "versionCode": 2,
+      "versionCode": 4,
       "permissions": [],
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.SYSTEM_ALERT_WINDOW"
-      ]
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.READ_APP_BADGE",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/store/adaptive-foreground.png",
+        "backgroundColor": "#558e93"
+      },
+      "googleServicesFile": "./google-services.json"
     },
     "scheme": "envelope-mini-manual-budget-envelopes",
-    "userInterfaceStyle": "light"
+    "userInterfaceStyle": "light",
+    "icon": "./assets/store/icon.png",
+    "ios": {
+      "bundleIdentifier": "com.jeetech.a001",
+      "buildNumber": "3.29877400",
+      "appleTeamId": "BJ9K59US7U",
+      "supportsTablet": false,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "icon": "./assets/ios-icon.png"
+    }
   }
 }

@@ -7,8 +7,8 @@ import {
   purchaseUpdatedListener,
   purchaseErrorListener,
   type Purchase,
-} from "expo-iap";
-import { Linking } from "react-native";
+} from "./expo-iap-ios";
+import { Linking, Platform } from "react-native";
 import monetization from "../../monetization.json";
 import product from "../../product.json";
 import { store } from "./store";
@@ -134,7 +134,8 @@ export const iap = {
 
   async purchase(sku: string): Promise<void> {
     if (!connected) return;
-    await requestPurchase({ request: { google: { skus: [sku] } }, type: "in-app" });
+    // Same one-time SKUs exist on the App Store; iOS routes through StoreKit.
+    await requestPurchase({ request: { apple: { sku }, google: { skus: [sku] } }, type: "in-app" });
   },
 
   /** Start a subscription (uses the free-trial offer when the user is eligible). */
@@ -144,13 +145,21 @@ export const iap = {
     if (!plan?.offerToken) return;
     analytics.track("subscribe_start", { sku });
     await requestPurchase({
-      request: { google: { skus: [sku], subscriptionOffers: [{ sku, offerToken: plan.offerToken }] } },
+      request: {
+        apple: { sku },
+        google: { skus: [sku], subscriptionOffers: [{ sku, offerToken: plan.offerToken }] },
+      },
       type: "subs",
     });
   },
 
-  /** Play's own screen to cancel / change a subscription (policy: must be easy to find). */
+  /** The store's own screen to cancel / change a subscription (policy: must be easy to find). */
   manageSubscriptions(sku?: string): void {
+    if (Platform.OS === "ios") {
+      // App Store subscriptions screen — never Google Play wording on iOS.
+      Linking.openURL("https://apps.apple.com/account/subscriptions").catch(() => {});
+      return;
+    }
     const q = sku ? `?sku=${sku}&package=${product.package}` : "";
     Linking.openURL(`https://play.google.com/store/account/subscriptions${q}`).catch(() => {});
   },

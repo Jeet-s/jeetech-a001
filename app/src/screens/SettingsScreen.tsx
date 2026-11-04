@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, Share, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Alert, Linking, ScrollView, Share, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import {
   Button,
   Card,
@@ -41,6 +41,9 @@ import type { PeriodPattern } from "../core/dates";
 import { addDays, MONTHS, WEEKDAY } from "../core/dates";
 import { exportCsv, exportSummary, importCsvText } from "../core/csv";
 import product from "../../product.json";
+import monetization from "../../monetization.json";
+
+const PRIVACY_URL = monetization.legal.privacyUrl;
 
 const PATTERN_LABEL: Record<PeriodPattern, string> = {
   monthly: "Monthly",
@@ -54,7 +57,7 @@ export function SettingsScreen({ bottomInset, onPro }: { bottomInset: number; on
   const s = useBudget();
   const settings = useSettings();
   const { openTransfer } = useSheets();
-  const [sheet, setSheet] = useState<null | "currency" | "period" | "default" | "accounts" | "import" | "privacy" | "pin">(null);
+  const [sheet, setSheet] = useState<null | "currency" | "period" | "default" | "accounts" | "import" | "privacy" | "analytics" | "pin">(null);
 
   const periodLabel = s.prefs.period.type === "monthly" ? "Monthly" : PATTERN_LABEL[s.prefs.period.pattern ?? "monthly"];
   const defAcc = accountById(s, s.prefs.defaultAccountId);
@@ -102,7 +105,7 @@ export function SettingsScreen({ bottomInset, onPro }: { bottomInset: number; on
         {/* Pro */}
         <Card padded={false} style={styles.card}>
           {settings.pro ? (
-            <ListItem icon="star" iconTint={palette.accent} title="Pro unlocked" subtitle="Thanks for supporting an ad-free, offline app!" />
+            <ListItem icon="star" iconTint={palette.accent} title="Pro unlocked" subtitle="Thanks for supporting Envelope Mini — you're ad-free!" />
           ) : (
             <ListItem icon="star" iconTint={palette.accent} title="Upgrade to Pro" subtitle="Advanced reports, bulk edit, multiple books" onPress={() => onPro("settings")} />
           )}
@@ -156,16 +159,17 @@ export function SettingsScreen({ bottomInset, onPro }: { bottomInset: number; on
           <ListItem icon="trash" title="Delete all data" destructive onPress={deleteAll} />
         </Card>
 
-        <SectionHeader title="Purchases" />
+        <SectionHeader title="Purchases & privacy" />
         <Card padded={false} style={styles.card}>
           <ListItem icon="repeat" title="Restore purchases" onPress={async () => { const n = await iap.restore().catch(() => 0); toast(n ? "Purchases restored" : "No purchases found"); }} />
           {!settings.adsRemoved && !settings.pro ? <ListItem icon="close" title="Remove ads" onPress={() => onPro("settings_remove_ads")} /> : null}
-          <ListItem icon="shield" title="Privacy" subtitle="Offline-first — no account, no tracking" onPress={() => setSheet("privacy")} />
+          <ListItem icon="chart" title="Anonymous analytics" value="On" onPress={() => setSheet("analytics")} />
+          <ListItem icon="shield" title="Privacy" subtitle="No account — your budgets stay on this device" onPress={() => setSheet("privacy")} />
         </Card>
 
         <View style={{ alignItems: "center", gap: 2, marginTop: space.sm }}>
           <Text style={type.caption}>Envelope Mini</Text>
-          <Text style={type.caption}>Your data never leaves this phone.</Text>
+          <Text style={[type.caption, { textAlign: "center" }]}>Envelope Mini is a personal budgeting tool for numbers you enter. It is not financial advice.</Text>
         </View>
       </Screen>
 
@@ -177,10 +181,40 @@ export function SettingsScreen({ bottomInset, onPro }: { bottomInset: number; on
       <PinSheet visible={sheet === "pin"} onClose={() => setSheet(null)} />
       <Sheet visible={sheet === "privacy"} title="Privacy" onClose={() => setSheet(null)}>
         <Text style={[type.body, { color: palette.inkSoft }]}>
-          Envelope Mini is offline-first. All of your budgets, accounts and transactions stay on this device — there's no
-          account to create, nothing is uploaded, and there are no bank connections or trackers. Export a CSV any time to
-          keep your own backup.
+          Your budgets, accounts and transactions stay on this device — there's no account to create and no bank
+          connections. Export a CSV any time to keep your own backup.
         </Text>
+        <Text style={[type.body, { color: palette.inkSoft }]}>
+          To improve the app we collect anonymous usage analytics — which screens and features are used, tied only to a
+          random install id. We never send your envelope names, notes or amounts, your name or email.
+        </Text>
+        <Text style={[type.body, { color: palette.inkSoft }]}>
+          The free tier shows ads from Google AdMob, which uses your advertising ID, approximate location (from your IP
+          address) and diagnostics to serve ads. Go ad-free with Pro.
+        </Text>
+        <Text style={[type.body, { color: palette.inkSoft }]}>
+          If you turn on reminders, the app registers a notification token with Google so reminders and occasional
+          updates can reach your device.
+        </Text>
+        <Button label="View anonymous analytics" variant="ghost" icon="chart" onPress={() => setSheet("analytics")} />
+        <Button label="Privacy policy" variant="ghost" icon="doc" onPress={() => Linking.openURL(PRIVACY_URL).catch(() => toast("Couldn't open the link"))} />
+        <Button label="Got it" onPress={() => setSheet(null)} />
+      </Sheet>
+      <Sheet visible={sheet === "analytics"} title="Anonymous analytics" onClose={() => setSheet(null)}>
+        <Text style={[type.bodyStrong, { color: palette.ink }]}>On — helping us improve Envelope Mini.</Text>
+        <Text style={[type.body, { color: palette.inkSoft }]}>
+          To make the app better we collect anonymous usage analytics. It's tied only to a random install id, never to you.
+        </Text>
+        <View style={{ gap: space.xs }}>
+          <Text style={type.label}>What we collect</Text>
+          <Text style={[type.body, { color: palette.inkSoft }]}>Which screens and features you open, and a random install id.</Text>
+        </View>
+        <View style={{ gap: space.xs }}>
+          <Text style={type.label}>What analytics never includes</Text>
+          <Text style={[type.body, { color: palette.inkSoft }]}>Your envelope names, notes or amounts, or your name and email.</Text>
+        </View>
+        <Text style={[type.caption, { color: palette.inkMuted }]}>Ads in the free tier are a separate flow — see Privacy for what Google AdMob collects.</Text>
+        <Button label="Privacy policy" variant="ghost" icon="doc" onPress={() => Linking.openURL(PRIVACY_URL).catch(() => toast("Couldn't open the link"))} />
         <Button label="Got it" onPress={() => setSheet(null)} />
       </Sheet>
     </>

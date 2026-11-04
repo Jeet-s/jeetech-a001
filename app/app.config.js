@@ -12,7 +12,10 @@ module.exports = ({ config }) => ({
       "react-native-google-mobile-ads",
       {
         androidAppId: monetization.admob.appId,
-        // Consent (UMP) is gathered before the SDK starts serving.
+        // iOS (App Store) AdMob app id — the Android id above is never used on iOS.
+        iosAppId: "ca-app-pub-5054561222360217~8719273204",
+        // Consent (UMP) is gathered before the SDK starts serving. No
+        // userTrackingUsageDescription → no App Tracking Transparency prompt on iOS.
         delayAppMeasurementInit: true,
       },
     ],

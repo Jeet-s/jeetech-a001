@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import mobileAds, {
   AdEventType,
   AdsConsent,
@@ -24,7 +25,16 @@ const MIN_BREAKS_BETWEEN_INTERSTITIALS = 6;
 const FIRST_INTERSTITIAL_SESSION = 4;
 const NO_BANNER_UNTIL_SESSION = 2;
 
-const ids = monetization.admob;
+// On iOS the App Store build serves from this app's iOS AdMob slot; the ids in
+// monetization.json are the Android (Play) unit ids and must never be requested
+// on iOS. (No IDFA / App Tracking Transparency — UMP consent only, below.)
+const IOS_ADMOB = {
+  appId: "ca-app-pub-5054561222360217~8719273204",
+  banner: "ca-app-pub-5054561222360217/5495003209",
+  rewarded: "ca-app-pub-5054561222360217/7290641466",
+  interstitial: "ca-app-pub-5054561222360217/4624774660",
+};
+const ids = Platform.OS === "ios" ? IOS_ADMOB : monetization.admob;
 let ready = false;
 let lastInterstitialAt = Date.now() / 1000; // grace period after launch
 let breaksSinceInterstitial = 0;

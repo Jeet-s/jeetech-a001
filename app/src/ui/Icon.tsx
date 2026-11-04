@@ -1,10 +1,11 @@
-import { useMemo } from "react";
-import { Canvas, Group, Path, Skia } from "@shopify/react-native-skia";
+import { memo } from "react";
+import Svg, { Path } from "react-native-svg";
 import { palette } from "./theme";
 
 /**
- * Vector icons drawn with Skia (24x24 Material-style paths). Add new icons to
- * PATHS rather than using emoji or text glyphs as icons.
+ * Vector icons drawn with react-native-svg (24x24 Material-style paths, memoised).
+ * Skia-per-icon paints blank on first frames and dozens of canvases cause soak ANRs,
+ * so icons render with SVG. Add new icons to PATHS rather than emoji/text glyphs.
  */
 export const PATHS = {
   check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
@@ -59,15 +60,10 @@ export const PATHS = {
 } as const;
 export type IconName = keyof typeof PATHS;
 
-export function Icon({ name, size = 24, color = palette.ink }: { name: IconName; size?: number; color?: string }) {
-  const path = useMemo(() => Skia.Path.MakeFromSVGString(PATHS[name]), [name]);
+export const Icon = memo(function Icon({ name, size = 24, color = palette.ink }: { name: IconName; size?: number; color?: string }) {
   return (
-    <Canvas style={{ width: size, height: size }} pointerEvents="none">
-      {path ? (
-        <Group transform={[{ scale: size / 24 }]}>
-          <Path path={path} color={color} />
-        </Group>
-      ) : null}
-    </Canvas>
+    <Svg width={size} height={size} viewBox="0 0 24 24" pointerEvents="none">
+      <Path d={PATHS[name]} fill={color} />
+    </Svg>
   );
-}
+});

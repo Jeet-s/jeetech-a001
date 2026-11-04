@@ -15,5 +15,6 @@ export { ProgressRing, BarChart, DonutChart, Legend } from "./Charts";
 export { HeroCard, Pill, ProgressBar, Amount, Skeleton, SkeletonList } from "./Display";
 export { TabBar, TAB_BAR_HEIGHT } from "./TabBar";
 export { AccountSheet, useCloudUser } from "./Account";
+export { AiReport } from "./AiReport";
 export { Confetti } from "../fx/Confetti";
 export { play, haptic, feedback, initAudio } from "../audio/sfx";

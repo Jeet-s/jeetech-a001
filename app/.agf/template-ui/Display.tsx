@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { StyleSheet, Text, View, type ViewStyle } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import { gradient, palette, radius, shadowStrong, space, tones, type, type Tone } from "./theme";
+import { design, gradient, palette, radius, shadowStrong, space, tones, type, type Tone } from "./theme";
 
 /**
  * The ONE headline card per screen: the number the user opens the app for
@@ -28,7 +28,7 @@ export function HeroCard({
   style?: ViewStyle;
 }) {
   return (
-    <LinearGradient colors={gradient.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, style]}>
+    <LinearGradient colors={gradient.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, gradient.border ? { borderWidth: 1, borderColor: gradient.border } : null, style]}>
       <View style={styles.heroRow}>
         <View style={{ flex: 1, gap: 2 }} accessible accessibilityLabel={`${overline}: ${value}${caption ? `, ${caption}` : ""}`}>
           <Text style={[type.overline, { color: gradient.onHeroSoft }]}>{overline}</Text>
@@ -142,9 +142,9 @@ export function SkeletonList({ rows = 4 }: { rows?: number }) {
 }
 
 const styles = StyleSheet.create({
-  hero: { borderRadius: radius.xl, padding: space.xl, gap: space.lg, ...shadowStrong, shadowColor: gradient.hero[1], shadowOpacity: 0.28 },
+  hero: { borderRadius: radius.xl, padding: space.xl, gap: space.lg, ...shadowStrong, ...(design.hero === "gradient" || design.hero === "solid" ? { shadowColor: gradient.hero[1], shadowOpacity: 0.28 } : {}) },
   heroRow: { flexDirection: "row", alignItems: "center", gap: space.lg },
-  heroPill: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: space.sm, backgroundColor: "rgba(255,255,255,0.16)", borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
+  heroPill: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", marginTop: space.sm, backgroundColor: gradient.pill, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
   dot: { width: 8, height: 8, borderRadius: 4 },
   pill: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start", borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 3 },
   track: { width: "100%", overflow: "hidden" },

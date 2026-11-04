@@ -1,5 +1,5 @@
 {
   "_note": "Factory-owned. url is set per build from TELEMETRY_URL; empty = events only go to the device log (QA reads them).",
-  "url": "",
+  "url": "https://app-cloud-api-production.up.railway.app/api/cloud/telemetry",
   "app": "com.jeetech.a001"
 }

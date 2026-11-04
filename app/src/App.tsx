@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppState, Linking, StyleSheet, View } from "react-native";
+import { AppState, Linking, Platform, Settings, StyleSheet, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import Animated, { FadeIn } from "react-native-reanimated";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from "@expo-google-fonts/inter";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -34,9 +33,17 @@ export default function App() {
   const [shot, setShot] = useState<string | null | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    Linking.getInitialURL()
-      .then((u) => setShot(u?.match(/shot\/([\w-]+)/)?.[1] ?? null))
-      .catch(() => setShot(null));
+    // Screenshot mode: Android opens <scheme>://shot/<id>; iOS can't deep-link
+    // itself at launch, so the capture tool passes it as the launch argument
+    // -AGFShot <id>, which lands in the app's user defaults (Settings).
+    const iosShot = Platform.OS === "ios" ? Settings.get("AGFShot") : undefined;
+    if (typeof iosShot === "string" && iosShot) {
+      setShot(iosShot.match(/([\w-]+)/)?.[1] ?? null);
+    } else {
+      Linking.getInitialURL()
+        .then((u) => setShot(u?.match(/shot\/([\w-]+)/)?.[1] ?? null))
+        .catch(() => setShot(null));
+    }
     Promise.all([store.load(), budgetStore.load()]).finally(() => setLoaded(true));
   }, []);
   const ready = fontsLoaded && loaded && shot !== undefined;
@@ -76,9 +83,6 @@ function Main() {
   const [pro, setPro] = useState<string | null>(null);
   const [locked, setLocked] = useState(() => budgetStore.get().prefs.security.pinEnabled);
   const bgAt = useRef(0);
-  // The first screen after onboarding should appear instantly (no fade-from-blank);
-  // tab-to-tab switches afterwards still cross-fade.
-  const tabsSeen = useRef(false);
 
   useEffect(() => {
     store.set({ sessions: store.get().sessions + 1 });
@@ -114,11 +118,6 @@ function Main() {
   useEffect(() => {
     if (settings.onboarded) analytics.track("screen_view", { screen: tab });
   }, [tab, settings.onboarded]);
-  useEffect(() => {
-    if (!settings.onboarded) return;
-    const t = setTimeout(() => { tabsSeen.current = true; }, 220);
-    return () => clearTimeout(t);
-  }, [settings.onboarded]);
   const openPro = useCallback((from: string) => setPro(from), []);
   const closePro = useCallback(() => setPro(null), []);
 
@@ -138,7 +137,7 @@ function Main() {
   return (
     <SheetsProvider>
       <View style={styles.root}>
-        <Animated.View key={tab} entering={tabsSeen.current ? FadeIn.duration(160) : undefined} style={styles.root}>
+        <View style={styles.root}>
           {tab === "envelopes" ? (
             <EnvelopesScreen bottomInset={bottom} onPro={openPro} booting={booting} />
           ) : tab === "transactions" ? (
@@ -150,7 +149,7 @@ function Main() {
           ) : (
             <SettingsScreen bottomInset={bottom} onPro={openPro} />
           )}
-        </Animated.View>
+        </View>
         <TabBar tabs={TABS} active={tab} onChange={setTab} />
         <ProSheet visible={!!pro} from={pro ?? ""} onClose={closePro} />
         <ToastHost bottom={TAB_BAR_HEIGHT + insets.bottom + banner + 12} />

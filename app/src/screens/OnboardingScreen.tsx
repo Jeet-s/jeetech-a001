@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeInRight, FadeOutLeft } from "react-native-reanimated";
 import { Button, FooterScreen, Icon, Tappable, TextField, Toggle, feedback, palette, radius, space, type } from "../ui";
 import { OptionChips } from "./kit";
 import { mutate, today } from "../state";
@@ -78,13 +77,13 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
 
   return (
     <FooterScreen top={dots} footer={footer}>
-      <Animated.View key={step} entering={FadeInRight.duration(240)} exiting={FadeOutLeft.duration(140)} style={step === 1 ? styles.bodyTight : styles.body}>
+      <View style={step === 1 ? styles.bodyTight : styles.body}>
         {step === 0 ? (
           <>
             <Image source={art.onboarding_1_welcome} style={styles.hero} resizeMode="contain" />
             <Text style={[type.display, styles.center]}>Budget by envelope</Text>
             <Text style={[type.body, styles.center, { color: palette.inkSoft }]}>
-              Add an expense or deposit in one tap. No account, no bank links — everything stays on your phone.
+              Add an expense or deposit in one tap. No account to create and no bank links required.
             </Text>
             <View style={{ gap: 6 }}>
               <Text style={[type.label, { textAlign: "center" }]}>Currency</Text>
@@ -152,7 +151,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
             </Text>
           </>
         )}
-      </Animated.View>
+      </View>
     </FooterScreen>
   );
 }

@@ -1,13 +1,20 @@
-import { useMemo } from "react";
-import { Canvas, Group, Path, Skia } from "@shopify/react-native-skia";
+import { memo } from "react";
+import Svg, { Path } from "react-native-svg";
 import { palette } from "./theme";
 
 /**
- * Vector icons drawn with Skia (24x24 Material-style paths). Add new icons to
+ * Vector icons drawn with react-native-svg (24x24 Material-style paths). Add new icons to
  * PATHS rather than using emoji or text glyphs as icons.
+ *
+ * react-native-svg, NOT a Skia <Canvas> per icon: a Skia canvas cold-paints late on a loaded device (icons showed as
+ * blank circles / empty placeholders in QA's first frames) and dozens of independent canvases redrawing on every
+ * store change wedged the JS thread (soak ANR) — seen in Floria, Band Up, Gully Score and Sugar Plate. SVG paints on
+ * the first layout pass and is far lighter per icon. Keep Skia for real charts / animations, memoised.
  */
 export const PATHS = {
   check: "M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
+  share:
+    "M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z",
   plus: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z",
   close: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
   chevronRight: "M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z",
@@ -27,15 +34,10 @@ export const PATHS = {
 } as const;
 export type IconName = keyof typeof PATHS;
 
-export function Icon({ name, size = 24, color = palette.ink }: { name: IconName; size?: number; color?: string }) {
-  const path = useMemo(() => Skia.Path.MakeFromSVGString(PATHS[name]), [name]);
+export const Icon = memo(function Icon({ name, size = 24, color = palette.ink }: { name: IconName; size?: number; color?: string }) {
   return (
-    <Canvas style={{ width: size, height: size }} pointerEvents="none">
-      {path ? (
-        <Group transform={[{ scale: size / 24 }]}>
-          <Path path={path} color={color} />
-        </Group>
-      ) : null}
-    </Canvas>
+    <Svg width={size} height={size} viewBox="0 0 24 24" pointerEvents="none">
+      <Path d={PATHS[name]} fill={color} />
+    </Svg>
   );
-}
+});

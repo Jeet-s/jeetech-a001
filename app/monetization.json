@@ -3,6 +3,12 @@
   "admob": {
     "appId": "ca-app-pub-5054561222360217~7264376296",
     "banner": "ca-app-pub-5054561222360217/3572718309",
+    "verify": {
+      "linked": true,
+      "status": "Ready",
+      "checked_at": "2026-10-26T21:52:11.462Z",
+      "website_set": true
+    },
     "rewarded": "ca-app-pub-5054561222360217/5348834409",
     "interstitial": "ca-app-pub-5054561222360217/5166580589",
     "test": false
@@ -23,5 +29,9 @@
       "consumable": false
     }
   ],
-  "subscriptions": []
+  "subscriptions": [],
+  "legal": {
+    "privacyUrl": "https://app-cloud-api-production.up.railway.app/cloud/legal/a001/privacy.html",
+    "termsUrl": "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+  }
 }

@@ -29,7 +29,8 @@ export function Tappable({
   role?: "button" | "link" | "checkbox" | "tab" | "switch";
 }) {
   const p = useSharedValue(0);
-  const anim = useAnimatedStyle(() => ({ transform: [{ scale: 1 - p.value * (1 - scale) }] }));
+  // Scale AND a slight dim while pressed: a 3% scale alone was too subtle to read as a pressed state in QA frames.
+  const anim = useAnimatedStyle(() => ({ transform: [{ scale: 1 - p.value * (1 - scale) }], opacity: 1 - p.value * 0.18 }));
   return (
     <APressable
       accessibilityRole={role}

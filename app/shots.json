@@ -6,6 +6,6 @@
     { "id": "detail", "caption": "See where each dollar goes" },
     { "id": "reports", "caption": "Clear spending insights" },
     { "id": "recurring", "caption": "Bills post on their own" },
-    { "id": "pro", "caption": "Private, offline, no ads" }
+    { "id": "pro", "caption": "Go ad-free with Pro" }
   ]
 }

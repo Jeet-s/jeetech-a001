@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
 import { Canvas, Group, RoundedRect, Circle } from "@shopify/react-native-skia";
 import { Easing, useDerivedValue, useSharedValue, withTiming, type SharedValue } from "react-native-reanimated";
@@ -32,7 +32,7 @@ function Particle({ p, t, ox, oy }: { p: P; t: SharedValue<number>; ox: number; 
  * (trigger 0 = idle) rather than when the moment happens.
  * Use sparingly on real milestones: a streak record, finishing every task today, unlocking Pro.
  */
-export function Confetti({ trigger, count = 70, origin }: { trigger: number; count?: number; origin?: { x: number; y: number } }) {
+export const Confetti = memo(function Confetti({ trigger, count = 70, origin }: { trigger: number; count?: number; origin?: { x: number; y: number } }) {
   const { width, height } = useWindowDimensions();
   // Starts "finished" (every particle faded out) so the canvas can stay mounted: creating a Skia
   // canvas at the moment of a milestone stalls the frame the user is watching.
@@ -70,4 +70,4 @@ export function Confetti({ trigger, count = 70, origin }: { trigger: number; cou
       ))}
     </Canvas>
   );
-}
+});

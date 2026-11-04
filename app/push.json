@@ -1,0 +1,4 @@
+{
+  "app": "com.jeetech.a001",
+  "registerUrl": "https://app-cloud-api-production.up.railway.app/api/cloud/push/register"
+}

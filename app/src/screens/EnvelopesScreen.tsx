@@ -109,7 +109,8 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
     const over = sum.overspent;
     const flashing = e.id === flashId;
     return (
-      <Animated.View key={e.id} layout={LinearTransition.duration(200)} entering={FadeInDown.duration(260).delay(Math.min(index, 7) * 45)}>
+      <Animated.View key={e.id} layout={LinearTransition.duration(200)}>
+        <Animated.View entering={FadeInDown.duration(260).delay(Math.min(index, 7) * 45)}>
         <Tappable
           label={`${e.name}, ${formatMoney(Math.abs(sum.available), cur)} ${over ? "overspent" : "left"}`}
           onPress={() => setDetailId(e.id)}
@@ -168,6 +169,7 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
             ) : null}
           </View>
         </Tappable>
+        </Animated.View>
       </Animated.View>
     );
   };
@@ -268,6 +270,12 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
               {okList.map((e, i) => renderWithChildren(e, i + overList.length))}
             </View>
           )}
+
+          {!booting && all.length ? (
+            <Text style={[type.caption, { color: palette.inkMuted, textAlign: "center", marginTop: space.sm }]}>
+              Envelope Mini is a personal budgeting tool for numbers you enter. It is not financial advice.
+            </Text>
+          ) : null}
         </Screen>
 
         {all.length && !searching ? (

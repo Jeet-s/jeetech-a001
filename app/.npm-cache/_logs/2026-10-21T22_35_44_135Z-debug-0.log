@@ -1,0 +1,16 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/jagjeetsingh/.npmrc
+5 silly config load:file:/usr/local/etc/npmrc
+6 verbose title npm config get prefix
+7 verbose argv "config" "--global" "get" "prefix"
+8 verbose logfile logs-max:10 dir:/Users/jagjeetsingh/ai-app-factory/.workspaces/bb86cbb5-d738-4d00-ad85-236a17392419/.npm-cache/_logs/2026-10-21T22_35_44_135Z-
+9 verbose logfile /Users/jagjeetsingh/ai-app-factory/.workspaces/bb86cbb5-d738-4d00-ad85-236a17392419/.npm-cache/_logs/2026-10-21T22_35_44_135Z-debug-0.log
+10 verbose cwd /Users/jagjeetsingh/ai-app-factory/.workspaces/bb86cbb5-d738-4d00-ad85-236a17392419
+11 verbose os Darwin 27.0.0
+12 verbose node v22.20.0
+13 verbose npm  v10.9.3
+14 verbose exit 0
+15 info ok

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, StyleSheet, Text, View } from "react-native";
 import { Button, Confetti, Icon, Sheet, feedback, palette, radius, space, toast, type } from "../ui";
 import { iap } from "../modules/iap";
 import { useSettings } from "../modules/store";
@@ -11,7 +11,7 @@ const PERKS = [
   "Bulk edit — change many transactions at once",
   "Multiple budgets (separate books)",
   "Extra themes & PDF-ready exports",
-  "No ads, ever — one payment, no subscription",
+  "Ad-free forever — one payment, no subscription",
 ];
 
 /** The Pro offer. Opened from a locked feature or Settings; `from` is tracked. */
@@ -47,6 +47,11 @@ export function ProSheet({ visible, from, onClose }: { visible: boolean; from: s
     feedback(n ? "success" : "pop", n ? "success" : "light");
     toast(n ? "Purchases restored" : "Nothing to restore yet");
   };
+  // On iOS (App Store) a purchase button may only appear for a product StoreKit
+  // actually returned — no dead paywall buttons if a product isn't approved yet.
+  // Store-screenshot captures (from === "screenshot") run without a live store,
+  // so always render the full paywall there.
+  const sold = (sku: string) => from === "screenshot" || Platform.OS !== "ios" || iap.price(sku) != null;
 
   return (
     <Sheet visible={visible} title="Envelope Mini Pro" onClose={onClose}>
@@ -59,15 +64,19 @@ export function ProSheet({ visible, from, onClose }: { visible: boolean; from: s
           </View>
         ))}
       </View>
-      <Button
-        label={`Unlock Pro${iap.price("pro_unlock") ? ` · ${iap.price("pro_unlock")}` : ""}`}
-        size="lg"
-        icon="star"
-        loading={busy}
-        onPress={() => buy("pro_unlock")}
-      />
-      <Text style={[type.caption, { textAlign: "center" }]}>One-time purchase · all core budgeting stays free</Text>
-      {!adsRemoved ? (
+      {sold("pro_unlock") ? (
+        <>
+          <Button
+            label={`Unlock Pro${iap.price("pro_unlock") ? ` · ${iap.price("pro_unlock")}` : ""}`}
+            size="lg"
+            icon="star"
+            loading={busy}
+            onPress={() => buy("pro_unlock")}
+          />
+          <Text style={[type.caption, { textAlign: "center" }]}>One-time purchase · all core budgeting stays free</Text>
+        </>
+      ) : null}
+      {!adsRemoved && sold("remove_ads") ? (
         <Button label={`Just remove ads${iap.price("remove_ads") ? ` · ${iap.price("remove_ads")}` : ""}`} variant="ghost" loading={busy} onPress={() => buy("remove_ads")} />
       ) : null}
       <Button label="Already bought it? Restore purchases" variant="ghost" size="sm" sound="pop" style={styles.restore} onPress={restore} />

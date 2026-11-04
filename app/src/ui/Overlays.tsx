@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions, type ImageSourcePropType } from "react-native";
-import Animated, { Easing, FadeInDown, FadeOutDown, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { Icon, type IconName } from "./Icon";
@@ -75,6 +75,9 @@ export function toast(text: string, action?: ToastMsg["action"]): void {
 
 export function ToastHost({ bottom = 96 }: { bottom?: number }) {
   const [msg, setMsg] = useState<ToastMsg | null>(null);
+  // Drive the enter/replay with a shared value (not a keyed `entering`): a keyed
+  // Animated.View that remounts per toast can stick blank at opacity 0 on Android.
+  const anim = useSharedValue(0);
   useEffect(() => {
     let n = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -88,9 +91,15 @@ export function ToastHost({ bottom = 96 }: { bottom?: number }) {
       if (timer) clearTimeout(timer);
     };
   }, []);
+  useEffect(() => {
+    if (!msg) return;
+    anim.value = 0;
+    anim.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.quad) });
+  }, [msg, anim]);
+  const style = useAnimatedStyle(() => ({ opacity: anim.value, transform: [{ translateY: (1 - anim.value) * 16 }] }));
   if (!msg) return null;
   return (
-    <Animated.View key={msg.id} entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(160)} style={[styles.toast, { bottom }]} accessibilityLiveRegion="polite">
+    <Animated.View style={[styles.toast, { bottom }, style]} accessibilityLiveRegion="polite">
       <Text style={[type.bodyStrong, { color: "#fff", flex: 1 }]}>{msg.text}</Text>
       {msg.action ? (
         <Tappable

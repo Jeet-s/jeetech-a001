@@ -54,6 +54,8 @@ export function Screen({
           {children}
         </View>
       )}
+      {/* Opaque strip behind the (translucent) status bar: scrolled content must never sit under the clock/icons. */}
+      <View pointerEvents="none" style={[styles.statusBar, { height: insets.top }]} />
     </View>
   );
 }
@@ -145,6 +147,7 @@ export function Stat({ value, label, tone = palette.ink }: { value: string; labe
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: palette.bg },
+  statusBar: { position: "absolute", top: 0, left: 0, right: 0, backgroundColor: palette.bg, zIndex: 10 },
   content: { paddingHorizontal: space.lg, gap: space.lg },
   header: { flexDirection: "row", alignItems: "flex-end", gap: space.md, marginBottom: space.xs },
   subtitle: { marginBottom: 2 },
