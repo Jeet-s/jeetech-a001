@@ -105,6 +105,7 @@ import {
 import { seedSamples, startFromScratch, ensureCashAccount } from "../src/core/onboarding";
 import { migrateBudget } from "../src/core/data";
 import { sim } from "../src/core/sim";
+import { dailyCheckIn } from "../src/core/checkin";
 
 const results: { name: string; ok: boolean; why?: string }[] = [];
 const features = new Set<string>();
@@ -937,6 +938,66 @@ test("prefs", "an archived account cannot become the default", () => {
   s = deleteAccount(s, b.id!); // archived (has history)
   s = setDefaultAccount(s, b.id!);
   ok(s.prefs.defaultAccountId !== b.id!, "archived account must not be default");
+});
+
+test("activation", "starter envelopes allow a real expense without further setup", () => {
+  const s = seedSamples(setCurrency(emptyState(), "INR"), T);
+  eq(dailyCheckIn(s, T), { latest: null, todayCount: 0 });
+  const saved = addTransaction(s, { type: "expense", amount: 2500, accountId: preferredAccountId(s)!, envelopeId: firstEnv(s) }, NOW);
+  eq(saved.error, null);
+  eq(dailyCheckIn(saved.state, T).latest?.amount, 2500);
+  eq(dailyCheckIn(saved.state, T).latest?.currency, "INR");
+  eq(dailyCheckIn(saved.state, T).todayCount, 1);
+});
+test("activation", "skipped setup needs only an envelope before a first expense", () => {
+  let s = startFromScratch(emptyState());
+  eq(dailyCheckIn(s, T).latest, null);
+  const created = addEnvelope(s, { name: "My spending" });
+  s = created.state;
+  const saved = addTransaction(s, { type: "expense", amount: 100, accountId: cash(s), envelopeId: created.id! }, NOW);
+  eq(saved.error, null);
+  eq(dailyCheckIn(saved.state, T).todayCount, 1);
+});
+test("activation", "a rejected expense does not appear as saved activity", () => {
+  const s = seeded();
+  const rejected = addTransaction(s, { type: "expense", amount: 0, accountId: cash(s), envelopeId: firstEnv(s) }, NOW);
+  ok(rejected.error !== null);
+  eq(dailyCheckIn(rejected.state, T), { latest: null, todayCount: 0 });
+});
+test("activation", "daily check-in resets across local days and retains the saved result", () => {
+  const s = addTransaction(seeded(), { type: "income", amount: 900, accountId: cash(seeded()), envelopeId: null }, `${T}T23:59:00.000`).state;
+  eq(dailyCheckIn(s, T).todayCount, 1);
+  eq(dailyCheckIn(s, addDays(T, 1)).todayCount, 0);
+  eq(dailyCheckIn(s, addDays(T, 1)).latest?.amount, 900);
+});
+test("activation", "deleted entries, transfers and automatic bills do not imply a manual check-in", () => {
+  let s = seeded();
+  const saved = addTransaction(s, { type: "expense", amount: 100, accountId: cash(s), envelopeId: firstEnv(s) }, NOW);
+  s = deleteTransaction(saved.state, saved.id!);
+  const second = addAccount(s, { name: "Checking" });
+  s = addTransfer(second.state, { amount: 100, accountId: cash(s), accountIdTo: second.id! }, NOW).state;
+  const bill = addRecurring(s, { name: "Bill", schedule: sch({ kind: "monthly", startDate: T, params: { day: 10 } }), template: { type: "expense", amount: 100, accountId: cash(s), envelopeId: firstEnv(s) } }, NOW);
+  s = postAllDue(bill.state, T).state;
+  ok(s.transactions.some((t) => t.recurringInstanceId));
+  eq(dailyCheckIn(s, T), { latest: null, todayCount: 0 });
+});
+test("activation", "undo and restore keep the home result in sync with actual saved entries", () => {
+  const s = seeded();
+  const saved = addTransaction(s, { type: "expense", amount: 1500, accountId: cash(s), envelopeId: firstEnv(s) }, NOW).state;
+  const h = commit(initHistory(s), saved);
+  eq(dailyCheckIn(undo(h).present, T).latest, null);
+  const restored = migrateBudget(JSON.parse(JSON.stringify(saved)), 1);
+  eq(restored, saved);
+  eq(dailyCheckIn(restored, T), dailyCheckIn(saved, T));
+});
+test("activation", "last saved entry follows insertion order even for a backdated purchase", () => {
+  let s = seeded();
+  s = addTransaction(s, { type: "expense", amount: 100, accountId: cash(s), envelopeId: firstEnv(s) }, NOW).state;
+  s = addTransaction(s, { type: "expense", amount: 200, accountId: cash(s), envelopeId: firstEnv(s) }, iso(addDays(T, -1))).state;
+  const snapshot = JSON.stringify(s);
+  eq(dailyCheckIn(s, T).latest?.amount, 200);
+  eq(dailyCheckIn(s, T).todayCount, 1);
+  eq(JSON.stringify(s), snapshot);
 });
 
 // ─────────────────────────────── summary ───────────────────────────────────

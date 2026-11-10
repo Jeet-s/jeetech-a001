@@ -39,6 +39,7 @@ import { seedSamples } from "../core/onboarding";
 import { envelopeSummary, periodTotals } from "../core/budget";
 import { periodFor, nextPeriod, prevPeriod, periodLabel, daysBetween, type Period } from "../core/dates";
 import { formatMoney } from "../core/money";
+import { dailyCheckIn } from "../core/checkin";
 
 export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset: number; onPro: (from: string) => void; booting?: boolean }) {
   const s = useBudget();
@@ -75,6 +76,8 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
   const totals = periodTotals(s, period, s.prefs.period, asOf);
   const all = activeEnvelopes(s);
   const cur = s.prefs.currency;
+  const checkIn = useMemo(() => dailyCheckIn(s, todayKey), [s, todayKey]);
+  const latest = checkIn.latest;
 
   // Days remaining in the period — only meaningful for the current period.
   const daysLeft = offset === 0 ? Math.max(0, daysBetween(todayKey, period.end)) : null;
@@ -203,10 +206,17 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
             daysLeft={daysLeft}
             atNow={offset === 0}
             hasEnvelopes={all.length > 0}
+            firstEntry={!latest}
+            checkIn={latest
+              ? `${latest.type === "expense" ? "Expense" : "Deposit"} saved · ${formatMoney(latest.amount, latest.currency)}${latest.envelopeId ? ` · ${s.envelopes.find((e) => e.id === latest.envelopeId)?.name ?? "Envelope"}` : ""}`
+              : all.length ? "Start with one purchase. Enter the amount, then tap Save expense." : "Create an envelope, then log your first purchase."}
+            dailyHint={latest ? checkIn.todayCount > 0 ? `${checkIn.todayCount} ${checkIn.todayCount === 1 ? "entry" : "entries"} today. A quick check-in keeps your budget current.` : "A fresh day: log a purchase to keep your budget current." : undefined}
             onPrev={() => setOffset((o) => o - 1)}
             onNext={() => setOffset((o) => o + 1)}
             onReset={() => setOffset(0)}
             onDeposit={() => openTxn({ mode: "add", type: "income" })}
+            onExpense={() => openTxn({ mode: "add", type: "expense" })}
+            onCreate={() => setEditDraft({ mode: "add" })}
           />
 
           {searching ? (
@@ -236,7 +246,7 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
               <EmptyState
                 art={art.empty_state_envelopes}
                 title="Start in one tap"
-                body="We'll set up Groceries, Fuel & Eating Out with budgets — then just tap + to log your first expense. Undo anytime."
+                body="We'll set up Groceries, Fuel & Eating Out with example budgets — then tap Add expense to log a purchase. Undo anytime."
                 action={
                   <View style={{ gap: space.sm, alignSelf: "stretch" }}>
                     <Button label="Create Groceries, Fuel & Eating Out" icon="star" onPress={seedNow} />
@@ -311,10 +321,15 @@ function PeriodHero({
   daysLeft,
   atNow,
   hasEnvelopes,
+  firstEntry,
+  checkIn,
+  dailyHint,
   onPrev,
   onNext,
   onReset,
   onDeposit,
+  onExpense,
+  onCreate,
 }: {
   totals: { planned: number; spent: number; deposits: number; available: number; carryIn: number; carryOut: number };
   currency: string;
@@ -322,10 +337,15 @@ function PeriodHero({
   daysLeft: number | null;
   atNow: boolean;
   hasEnvelopes: boolean;
+  firstEntry: boolean;
+  checkIn: string;
+  dailyHint?: string;
   onPrev: () => void;
   onNext: () => void;
   onReset: () => void;
   onDeposit: () => void;
+  onExpense: () => void;
+  onCreate: () => void;
 }) {
   const over = totals.available < 0;
   const usedFrac = totals.planned > 0 ? Math.max(0, totals.spent / totals.planned) : 0;
@@ -376,6 +396,21 @@ function PeriodHero({
       status={{ label: statusLabel, tone: statusTone }}
       right={ring}
     >
+      <View style={{ gap: space.xs, minHeight: 76 }} accessibilityLiveRegion="polite">
+        <Text style={[type.amount, { fontSize: 14, lineHeight: 18, color: palette.onGlass }]}>{checkIn}</Text>
+        {dailyHint ? <Text style={[type.caption, { color: palette.onGlassSoft }]}>{dailyHint}</Text> : null}
+      </View>
+      <View style={{ flexDirection: "row", gap: space.sm }}>
+        <Tappable label={hasEnvelopes ? "Add expense" : "Create first envelope"} sound="pop" onPress={hasEnvelopes ? onExpense : onCreate} style={[firstEntry ? styles.heroCtaPrimary : styles.heroCtaGhost, { flex: 1 }]}>
+          <Icon name="plus" size={18} color={firstEntry ? palette.primaryDark : palette.onPrimary} />
+          <Text style={[type.button, { flexShrink: 1, color: firstEntry ? palette.primaryDark : palette.onPrimary }]}>{hasEnvelopes ? "Add expense" : "Create first envelope"}</Text>
+        </Tappable>
+        {hasEnvelopes ? (
+          <Tappable label="Add deposit" sound="pop" onPress={onDeposit} style={[styles.heroCtaGhost, { paddingHorizontal: space.sm }]}>
+            <Text style={[type.label, { color: palette.onPrimary }]}>Deposit</Text>
+          </Tappable>
+        ) : null}
+      </View>
       <View style={styles.heroStats}>
         <HeroStat label="Budgeted" minor={totals.planned} currency={currency} />
         <View style={styles.heroDivider} />
@@ -397,12 +432,6 @@ function PeriodHero({
         </View>
       ) : null}
 
-      {hasEnvelopes ? (
-        <Tappable label="Add deposit" sound="pop" onPress={onDeposit} style={styles.heroCtaGhost}>
-          <Icon name="arrowUp" size={18} color={palette.onPrimary} />
-          <Text style={[type.button, { color: palette.onPrimary }]}>Deposit</Text>
-        </Tappable>
-      ) : null}
     </HeroCard>
   );
 }
@@ -426,6 +455,7 @@ const styles = StyleSheet.create({
   heroCarry: { flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.sm, paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: palette.glassTrack },
   heroDivider: { width: StyleSheet.hairlineWidth, alignSelf: "stretch", backgroundColor: palette.glassTrack },
   heroCtaGhost: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 48, borderRadius: radius.md, borderWidth: 1.5, borderColor: palette.onGlassSoft },
+  heroCtaPrimary: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 48, paddingHorizontal: space.sm, borderRadius: radius.md, backgroundColor: palette.onPrimary },
   row: { backgroundColor: palette.surface, borderRadius: radius.lg, padding: space.lg, ...shadow },
   rowHead: { flexDirection: "row", alignItems: "center", gap: space.md },
   rowOver: { backgroundColor: palette.dangerSoft },

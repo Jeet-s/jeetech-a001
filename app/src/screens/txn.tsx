@@ -365,7 +365,7 @@ export function TransactionSheet({
           // Inline, friendly reason the Save button is waiting — no silent dead CTA.
           <Text style={[type.caption, styles.amountHint]}>Enter an amount above zero to save.</Text>
         ) : null}
-        <Button label={draft?.mode === "edit" ? "Save changes" : "Save"} size="lg" icon="check" disabled={!valid} onPress={save} />
+        <Button label={draft?.mode === "edit" ? "Save changes" : kind === "expense" ? "Save expense" : "Save deposit"} size="lg" icon="check" disabled={!valid} onPress={save} />
         {canSplit ? (
           <Button
             label="Split across envelopes"
