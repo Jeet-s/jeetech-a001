@@ -102,7 +102,6 @@ export function TransactionSheet({
   onSplit: (ctx: { accountId: string; total: Minor; note: string }) => void;
 }) {
   const s = useBudget();
-  const { height } = useWindowDimensions();
   const todayKey = today();
 
   const [kind, setKind] = useState<"expense" | "income">("expense");
@@ -270,10 +269,47 @@ export function TransactionSheet({
 
   const typeTitle = isTransfer ? "Edit transfer" : draft?.mode === "edit" ? "Edit transaction" : kind === "expense" ? "Add expense" : "Add deposit";
   const transferAccounts = isTransfer && editing ? `${accountById(s, editing.accountId)?.name ?? ""} → ${accountById(s, editing.accountIdTo)?.name ?? ""}` : "";
+  const saveLabel = draft?.mode === "edit" ? "Save changes" : kind === "expense" ? "Save expense" : "Save deposit";
 
   return (
-    <Sheet visible={!!draft} title={typeTitle} onClose={onClose}>
-      <ScrollView style={{ maxHeight: height * 0.66 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: space.md }}>
+    <Sheet visible={!!draft} title={typeTitle} onClose={onClose} footer={
+      <View style={{ gap: space.sm }}>
+        <View accessibilityLiveRegion="polite">
+          {preview ? (
+            <View style={styles.previewCard}>
+              <View style={styles.previewRow}>
+                <View style={[styles.previewDot, { backgroundColor: preview.color }]} />
+                <Text style={[type.label, { flex: 1, flexShrink: 1 }]}>
+                  {kind === "income" ? (preview.env ? `Deposit to ${preview.env.name}` : "Deposit") : preview.env?.name ?? "Expense"}
+                </Text>
+                <Money minor={amount ?? 0} currency={currency} style={[type.amount, { color: kind === "income" ? palette.success : palette.ink }]} sign={kind === "income"} />
+              </View>
+              {preview.env && preview.before != null && preview.after != null ? (
+                <View style={styles.previewRow}>
+                  <Text style={[type.caption, { flexShrink: 1 }]}>
+                    Left {kind === "income" ? "after deposit" : "after this"}
+                  </Text>
+                  <Text style={styles.previewArrow}>
+                    {formatMoney(preview.before, currency)}
+                    <Text style={{ color: palette.inkMuted }}>{"  →  "}</Text>
+                    <Text style={{ color: preview.over ? palette.danger : palette.ink }}>{formatMoney(preview.after, currency)}</Text>
+                  </Text>
+                  {preview.over ? <Pill label="Over" tone="danger" /> : null}
+                </View>
+              ) : null}
+            </View>
+          ) : (
+            <View style={styles.previewCard}>
+              <Text style={type.label}>{isTransfer ? transferAccounts : envelopeById(s, envelopeId)?.name ?? (kind === "income" ? "Deposit" : "Choose an envelope below")}</Text>
+              <Text style={[type.caption, styles.amountHint]}>Enter an amount, then tap {saveLabel}.</Text>
+            </View>
+          )}
+          <Text style={[type.caption, { color: palette.danger, minHeight: 20 }]}>{error ?? " "}</Text>
+        </View>
+        <Button label={saveLabel} size="lg" icon="check" disabled={!valid} onPress={save} />
+      </View>
+    }>
+      <View style={{ gap: space.md }}>
         {isTransfer ? (
           <>
             <View style={styles.hintRow}>
@@ -334,38 +370,6 @@ export function TransactionSheet({
           <Button label="Add date, note & labels" variant="ghost" size="sm" icon="edit" sound={null} onPress={() => setMore(true)} />
         )}
 
-        {error ? <Text style={[type.caption, { color: palette.danger }]}>{error}</Text> : null}
-      </ScrollView>
-
-      <View style={{ gap: space.sm }}>
-        {preview ? (
-          <Animated.View entering={FadeIn.duration(160)} style={styles.previewCard}>
-            <View style={styles.previewRow}>
-              <View style={[styles.previewDot, { backgroundColor: preview.color }]} />
-              <Text style={[type.label, { flex: 1 }]} numberOfLines={1}>
-                {kind === "income" ? (preview.env ? `Deposit to ${preview.env.name}` : "Deposit") : preview.env?.name ?? "Expense"}
-              </Text>
-              <Money minor={amount ?? 0} currency={currency} style={[type.amount, { color: kind === "income" ? palette.success : palette.ink }]} sign={kind === "income"} />
-            </View>
-            {preview.env && preview.before != null && preview.after != null ? (
-              <View style={styles.previewRow}>
-                <Text style={[type.caption, { flex: 1 }]} numberOfLines={1}>
-                  Left {kind === "income" ? "after deposit" : "after this"}
-                </Text>
-                <Text style={styles.previewArrow}>
-                  {formatMoney(preview.before, currency)}
-                  <Text style={{ color: palette.inkMuted }}>{"  →  "}</Text>
-                  <Text style={{ color: preview.over ? palette.danger : palette.ink }}>{formatMoney(preview.after, currency)}</Text>
-                </Text>
-                {preview.over ? <Pill label="Over" tone="danger" /> : null}
-              </View>
-            ) : null}
-          </Animated.View>
-        ) : !valid && !error ? (
-          // Inline, friendly reason the Save button is waiting — no silent dead CTA.
-          <Text style={[type.caption, styles.amountHint]}>Enter an amount above zero to save.</Text>
-        ) : null}
-        <Button label={draft?.mode === "edit" ? "Save changes" : kind === "expense" ? "Save expense" : "Save deposit"} size="lg" icon="check" disabled={!valid} onPress={save} />
         {canSplit ? (
           <Button
             label="Split across envelopes"
@@ -385,6 +389,7 @@ export function TransactionSheet({
           </View>
         ) : null}
       </View>
+
     </Sheet>
   );
 }
@@ -567,8 +572,8 @@ const styles = StyleSheet.create({
   labelTags: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   labelTag: { ...type.caption, color: palette.inkSoft, backgroundColor: palette.surfaceAlt, paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, overflow: "hidden" },
   splitHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  previewCard: { backgroundColor: palette.surfaceAlt, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.xs, gap: 2 },
-  previewRow: { flexDirection: "row", alignItems: "center", gap: space.sm, minHeight: 40 },
+  previewCard: { backgroundColor: palette.surfaceAlt, borderRadius: radius.md, paddingHorizontal: space.md, paddingVertical: space.xs, gap: 2, minHeight: 90, justifyContent: "center" },
+  previewRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: space.sm, minHeight: 40 },
   previewDot: { width: 10, height: 10, borderRadius: 5 },
   previewArrow: { ...type.amount, color: palette.ink },
   amountHint: { textAlign: "center", color: palette.inkMuted, paddingVertical: space.xs },

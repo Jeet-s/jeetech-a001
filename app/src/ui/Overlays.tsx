@@ -1,18 +1,31 @@
 import { useEffect, useState } from "react";
-import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions, type ImageSourcePropType } from "react-native";
+import { Image, Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions, type ImageSourcePropType } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconButton } from "./Button";
 import { Icon, type IconName } from "./Icon";
 import { Tappable } from "./Pressable";
+import { FooterScreen } from "./Layout";
 import { palette, radius, shadowStrong, space, springs, type } from "./theme";
 import { haptic, play } from "../audio/sfx";
 
 /** Bottom sheet over a dimmed backdrop — for add/edit forms, pickers and the Pro offer. */
-export function Sheet({ visible, title, onClose, children }: { visible: boolean; title?: string; onClose: () => void; children: React.ReactNode }) {
+export function Sheet({ visible, title, onClose, children, footer }: { visible: boolean; title?: string; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const y = useSharedValue(1);
+  const fixedFooter = footer != null;
+  const [keyboardTop, setKeyboardTop] = useState<number | null>(null);
+  // Use the overlap, rather than keyboard height, so Android's resized window
+  // and edge-to-edge windows both leave exactly the space the keyboard covers.
+  const keyboardHeight = keyboardTop == null ? 0 : Math.max(0, height - keyboardTop);
+  useEffect(() => {
+    if (!visible || !fixedFooter) { setKeyboardTop(null); return; }
+    setKeyboardTop(Keyboard.metrics()?.screenY ?? null);
+    const show = Keyboard.addListener("keyboardDidShow", (e) => setKeyboardTop(e.endCoordinates.screenY));
+    const hide = Keyboard.addListener("keyboardDidHide", () => setKeyboardTop(null));
+    return () => { show.remove(); hide.remove(); };
+  }, [visible, fixedFooter]);
   useEffect(() => {
     if (visible) {
       // Immediate tap confirmation while the sheet springs in — no silent wait.
@@ -30,16 +43,35 @@ export function Sheet({ visible, title, onClose, children }: { visible: boolean;
       <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: palette.scrim }, dim]}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
       </Animated.View>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.bottom} pointerEvents="box-none">
-        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }, sheet]}>
-          <View style={styles.grabber} />
-          {title ? (
-            <View style={styles.titleRow}>
-              <Text style={[type.title, { flex: 1 }]} accessibilityRole="header">{title}</Text>
-              <IconButton icon="close" label="Close" size={40} onPress={onClose} />
-            </View>
-          ) : null}
-          {children}
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" && !fixedFooter ? "padding" : undefined} style={[styles.bottom, fixedFooter ? { paddingBottom: keyboardHeight } : null]} pointerEvents="box-none">
+        <Animated.View style={[styles.sheet, { paddingBottom: insets.bottom + space.lg }, fixedFooter ? { height: Math.max(0, height - insets.top - space.md - keyboardHeight), paddingHorizontal: 0, overflow: "hidden" } : null, sheet]}>
+          {fixedFooter ? (
+            <FooterScreen
+              embedded
+              top={
+                <View style={{ gap: space.md }}>
+                  <View style={styles.grabber} />
+                  <View style={styles.titleRow}>
+                    <Text style={[type.title, { flex: 1 }]} accessibilityRole="header">{title}</Text>
+                    <IconButton icon="close" label="Close" size={40} onPress={onClose} />
+                  </View>
+                </View>
+              }
+              footer={footer}
+              contentStyle={{ justifyContent: "flex-start" }}
+            >
+              {children}
+            </FooterScreen>
+          ) : <>
+            <View style={styles.grabber} />
+            {title ? (
+              <View style={styles.titleRow}>
+                <Text style={[type.title, { flex: 1 }]} accessibilityRole="header">{title}</Text>
+                <IconButton icon="close" label="Close" size={40} onPress={onClose} />
+              </View>
+            ) : null}
+            {children}
+          </>}
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>

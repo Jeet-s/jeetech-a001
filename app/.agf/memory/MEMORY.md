@@ -1,1 +1,1 @@
-- [Envelope Mini activation](envelope-mini-activation.md) — corrected first-use instructions, simplified setup and added saved-entry/daily check-in feedback without a schema change.
+- [Envelope Mini activation](envelope-mini-activation.md) — first-use guidance and check-ins; bounded transaction sheet with fixed, keyboard-aware Save and reserved preview feedback; no schema change.

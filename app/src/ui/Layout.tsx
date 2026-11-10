@@ -71,14 +71,18 @@ export function FooterScreen({
   footer,
   children,
   contentStyle,
+  embedded = false,
 }: {
   top?: React.ReactNode;
   footer: React.ReactNode;
   children: React.ReactNode;
   contentStyle?: ViewStyle;
+  /** Inside a sheet, the sheet supplies safe areas and its surface colour. */
+  embedded?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   const [edge, setEdge] = useState({ above: false, below: false });
+  const surface = embedded ? palette.surface : palette.bg;
   const [box, setBox] = useState(0);
   const m = useRef({ y: 0, content: 0 });
   const update = () => {
@@ -91,8 +95,8 @@ export function FooterScreen({
     update();
   };
   return (
-    <View style={[styles.root, { paddingTop: insets.top + space.md }]}>
-      {top ? <View style={styles.fixedTop}>{top}</View> : null}
+    <View style={[styles.root, embedded ? { backgroundColor: palette.surface } : { paddingTop: insets.top + space.md }]}>
+      {top ? <View style={[styles.fixedTop, { backgroundColor: surface }]}>{top}</View> : null}
       <View style={{ flex: 1 }} onLayout={(e) => setBox(e.nativeEvent.layout.height)}>
         <ScrollView
           contentContainerStyle={[styles.footerBody, { minHeight: box }, contentStyle]}
@@ -107,10 +111,10 @@ export function FooterScreen({
         >
           {children}
         </ScrollView>
-        {edge.above ? <LinearGradient pointerEvents="none" colors={[palette.bg, `${palette.bg}00`]} style={[styles.fade, { top: 0 }]} /> : null}
-        {edge.below ? <LinearGradient pointerEvents="none" colors={[`${palette.bg}00`, palette.bg]} style={[styles.fade, { bottom: 0 }]} /> : null}
+        {edge.above ? <LinearGradient pointerEvents="none" colors={[surface, `${surface}00`]} style={[styles.fade, { top: 0 }]} /> : null}
+        {edge.below ? <LinearGradient pointerEvents="none" colors={[`${surface}00`, surface]} style={[styles.fade, { bottom: 0 }]} /> : null}
       </View>
-      <View style={[styles.footerBar, { paddingBottom: insets.bottom + space.lg }]}>{footer}</View>
+      <View style={[styles.footerBar, embedded ? { backgroundColor: palette.surface } : { paddingBottom: insets.bottom + space.lg }]}>{footer}</View>
     </View>
   );
 }
