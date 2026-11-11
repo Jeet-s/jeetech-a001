@@ -106,6 +106,7 @@ import { seedSamples, startFromScratch, ensureCashAccount } from "../src/core/on
 import { migrateBudget } from "../src/core/data";
 import { sim } from "../src/core/sim";
 import { dailyCheckIn } from "../src/core/checkin";
+import { addExpenseInNewEnvelope } from "../src/core/quickExpense";
 
 const results: { name: string; ok: boolean; why?: string }[] = [];
 const features = new Set<string>();
@@ -998,6 +999,67 @@ test("activation", "last saved entry follows insertion order even for a backdate
   eq(dailyCheckIn(s, T).latest?.amount, 200);
   eq(dailyCheckIn(s, T).todayCount, 1);
   eq(JSON.stringify(s), snapshot);
+});
+
+test("activation", "scratch path saves an envelope and real purchase in one operation", () => {
+  const s = startFromScratch(setCurrency(emptyState(), "INR"));
+  const snapshot = JSON.stringify(s);
+  const saved = addExpenseInNewEnvelope(s, { envelopeName: " Groceries ", amount: 2500, accountId: cash(s), note: "Lunch" }, NOW);
+  eq(saved.error, null);
+  eq(saved.state.envelopes.map((e) => e.name), ["Groceries"]);
+  eq(saved.state.transactions.map((t) => [t.type, t.amount, t.currency, t.envelopeId, t.note]), [["expense", 2500, "INR", saved.envelopeId!, "Lunch"]]);
+  eq(saved.state.budgets.length, 0);
+  eq(JSON.stringify(s), snapshot);
+});
+test("activation", "invalid first expense leaves no partial envelope or sequence change", () => {
+  const s = startFromScratch(emptyState());
+  for (const amount of [0, -100, NaN, Infinity, 0.5]) {
+    const saved = addExpenseInNewEnvelope(s, { envelopeName: "Groceries", amount, accountId: cash(s) }, NOW);
+    ok(saved.error !== null);
+    ok(saved.state === s);
+  }
+});
+test("activation", "missing account leaves first-expense data untouched", () => {
+  const s = startFromScratch(emptyState());
+  const saved = addExpenseInNewEnvelope(s, { envelopeName: "Groceries", amount: 100, accountId: "missing" }, NOW);
+  eq(saved.error, "no_account");
+  ok(saved.state === s);
+});
+test("activation", "first-expense envelope uses existing name validation", () => {
+  const s = startFromScratch(emptyState());
+  for (const [envelopeName, error] of [["  ", "empty_name"], ["x".repeat(41), "too_long"]]) {
+    const saved = addExpenseInNewEnvelope(s, { envelopeName, amount: 100, accountId: cash(s) }, NOW);
+    eq(saved.error, error);
+    ok(saved.state === s);
+  }
+  const existing = addEnvelope(s, { name: "Groceries" }).state;
+  const duplicate = addExpenseInNewEnvelope(existing, { envelopeName: " groceries ", amount: 100, accountId: cash(existing) }, NOW);
+  eq(duplicate.error, "duplicate");
+  ok(duplicate.state === existing);
+});
+test("activation", "first-expense transaction uses the selected account currency", () => {
+  const s = addAccount(startFromScratch(emptyState()), { name: "Euro cash", currency: "EUR" });
+  const saved = addExpenseInNewEnvelope(s.state, { envelopeName: "Travel", amount: 100, accountId: s.id! }, NOW);
+  eq(saved.error, null);
+  eq(saved.state.transactions[0].currency, "EUR");
+});
+test("activation", "first expense and envelope undo together and restore without migration loss", () => {
+  const s = startFromScratch(emptyState());
+  const saved = addExpenseInNewEnvelope(s, { envelopeName: "Groceries", amount: 100, accountId: cash(s) }, NOW).state;
+  const h = commit(initHistory(s), saved);
+  eq(undo(h).present, s);
+  eq(redo(undo(h)).present, saved);
+  const restored = migrateBudget(JSON.parse(JSON.stringify(saved)), 1);
+  eq(restored, saved);
+  eq(dailyCheckIn(restored, T).todayCount, 1);
+});
+test("activation", "journey offers a direct real first expense after skipped setup", () => {
+  const scratch = sim.apply(sim.init(), { t: "scratch" });
+  ok(sim.actions(scratch).some((a) => a.t === "first_expense"));
+  const saved = sim.apply(scratch, { t: "first_expense" });
+  ok(sim.goals.find((g) => g.id === "add_expense")!.done(saved));
+  eq(sim.invariants(saved), []);
+  eq(sim.deserialize(sim.serialize(saved)), saved);
 });
 
 // ─────────────────────────────── summary ───────────────────────────────────

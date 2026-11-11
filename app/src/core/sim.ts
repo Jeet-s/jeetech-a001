@@ -23,6 +23,7 @@ import {
 } from "./transactions";
 import { addEnvelope } from "./envelopes";
 import { addAccount } from "./accounts";
+import { addExpenseInNewEnvelope } from "./quickExpense";
 import { seedSamples, startFromScratch } from "./onboarding";
 import { addRecurring, postAllDue } from "./recurring";
 import { setCustomPeriod, setMonthlyPeriod, preferredAccountId } from "./prefs";
@@ -56,6 +57,7 @@ type Action =
   | { t: "add_envelope" }
   | { t: "add_account" }
   | { t: "add_expense" }
+  | { t: "first_expense" }
   | { t: "add_expense_bad" } // amount 0 — the UI lets you tap +, Save is rejected
   | { t: "add_income" }
   | { t: "transfer" }
@@ -89,11 +91,12 @@ export const sim: AppSim<SimState, Action> = {
     const d = s.data;
     const out: Action[] = [];
     if (!d.onboarded) {
-      out.push({ t: "seed" }, { t: "scratch" });
+      return [{ t: "seed" }, { t: "scratch" }];
     } else {
       const envs = activeEnvelopes(d);
       const accts = activeAccounts(d);
       if (envs.length < MAX_SIM_ENVELOPES) out.push({ t: "add_envelope" });
+      if (!envs.length && accts.length) out.push({ t: "first_expense" });
       if (accts.length < MAX_SIM_ACCOUNTS) out.push({ t: "add_account" });
       if (envs.length && accts.length) {
         out.push({ t: "add_expense" }, { t: "add_expense_bad" }, { t: "add_income" });
@@ -104,7 +107,7 @@ export const sim: AppSim<SimState, Action> = {
       if (lastTxn(d)) out.push({ t: "duplicate" }, { t: "delete_last" });
       if (d.recurring.some((r) => r.status === "active")) out.push({ t: "post_due" });
     }
-    // Settings + time are reachable from any onboarded-or-not state.
+    // Settings are reachable after onboarding.
     out.push({ t: "set_biweekly" }, { t: "set_monthly" }, { t: "next_day" });
     return out;
   },
@@ -125,6 +128,8 @@ export const sim: AppSim<SimState, Action> = {
         return { ...s, data: addEnvelope(d, { name: `Envelope ${d.seq}` }).state };
       case "add_account":
         return { ...s, data: addAccount(d, { name: `Account ${d.seq}`, type: "checking" }).state };
+      case "first_expense":
+        return { ...s, data: addExpenseInNewEnvelope(d, { envelopeName: "Groceries", amount: 2000, accountId: acctId }, now).state };
       case "add_expense":
         return {
           ...s,
@@ -192,6 +197,11 @@ export const sim: AppSim<SimState, Action> = {
   },
 
   goals: [
+    {
+      id: "first_expense_from_scratch",
+      name: "Skip setup and save a first purchase with its envelope",
+      done: (s) => s.data.envelopes.length === 1 && s.data.budgets.length === 0 && liveTxns(s.data).some((t) => t.type === "expense" && !t.recurringInstanceId),
+    },
     {
       id: "add_expense",
       name: "Log an expense from an envelope (UF1)",

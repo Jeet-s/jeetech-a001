@@ -209,14 +209,13 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
             firstEntry={!latest}
             checkIn={latest
               ? `${latest.type === "expense" ? "Expense" : "Deposit"} saved · ${formatMoney(latest.amount, latest.currency)}${latest.envelopeId ? ` · ${s.envelopes.find((e) => e.id === latest.envelopeId)?.name ?? "Envelope"}` : ""}`
-              : all.length ? "Start with one purchase. Enter the amount, then tap Save expense." : "Create an envelope, then log your first purchase."}
+              : all.length ? "Start with one purchase. Enter the amount, then tap Save expense." : "Log one purchase. Name your envelope as you save — budgets can wait."}
             dailyHint={latest ? checkIn.todayCount > 0 ? `${checkIn.todayCount} ${checkIn.todayCount === 1 ? "entry" : "entries"} today. A quick check-in keeps your budget current.` : "A fresh day: log a purchase to keep your budget current." : undefined}
             onPrev={() => setOffset((o) => o - 1)}
             onNext={() => setOffset((o) => o + 1)}
             onReset={() => setOffset(0)}
             onDeposit={() => openTxn({ mode: "add", type: "income" })}
             onExpense={() => openTxn({ mode: "add", type: "expense" })}
-            onCreate={() => setEditDraft({ mode: "add" })}
           />
 
           {searching ? (
@@ -245,8 +244,8 @@ export function EnvelopesScreen({ bottomInset, booting = false }: { bottomInset:
             <Card>
               <EmptyState
                 art={art.empty_state_envelopes}
-                title="Start in one tap"
-                body="We'll set up Groceries, Fuel & Eating Out with example budgets — then tap Add expense to log a purchase. Undo anytime."
+                title="Start with one purchase"
+                body="Tap Add expense above to save a purchase and its envelope together. Or use sample budgets to explore."
                 action={
                   <View style={{ gap: space.sm, alignSelf: "stretch" }}>
                     <Button label="Create Groceries, Fuel & Eating Out" icon="star" onPress={seedNow} />
@@ -329,7 +328,6 @@ function PeriodHero({
   onReset,
   onDeposit,
   onExpense,
-  onCreate,
 }: {
   totals: { planned: number; spent: number; deposits: number; available: number; carryIn: number; carryOut: number };
   currency: string;
@@ -345,7 +343,6 @@ function PeriodHero({
   onReset: () => void;
   onDeposit: () => void;
   onExpense: () => void;
-  onCreate: () => void;
 }) {
   const over = totals.available < 0;
   const usedFrac = totals.planned > 0 ? Math.max(0, totals.spent / totals.planned) : 0;
@@ -401,9 +398,9 @@ function PeriodHero({
         {dailyHint ? <Text style={[type.caption, { color: palette.onGlassSoft }]}>{dailyHint}</Text> : null}
       </View>
       <View style={{ flexDirection: "row", gap: space.sm }}>
-        <Tappable label={hasEnvelopes ? "Add expense" : "Create first envelope"} sound="pop" onPress={hasEnvelopes ? onExpense : onCreate} style={[firstEntry ? styles.heroCtaPrimary : styles.heroCtaGhost, { flex: 1 }]}>
+        <Tappable label="Add expense" sound="pop" onPress={onExpense} style={[firstEntry ? styles.heroCtaPrimary : styles.heroCtaGhost, { flex: 1 }]}>
           <Icon name="plus" size={18} color={firstEntry ? palette.primaryDark : palette.onPrimary} />
-          <Text style={[type.button, { flexShrink: 1, color: firstEntry ? palette.primaryDark : palette.onPrimary }]}>{hasEnvelopes ? "Add expense" : "Create first envelope"}</Text>
+          <Text style={[type.button, { flexShrink: 1, color: firstEntry ? palette.primaryDark : palette.onPrimary }]}>Add expense</Text>
         </Tappable>
         {hasEnvelopes ? (
           <Tappable label="Add deposit" sound="pop" onPress={onDeposit} style={[styles.heroCtaGhost, { paddingHorizontal: space.sm }]}>

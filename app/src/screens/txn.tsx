@@ -22,6 +22,7 @@ import {
   Money,
   OptionChips,
   accountTypeLabel,
+  envelopeError,
   txnError,
 } from "./kit";
 import { flashEnvelope, mutate, today, undo, useBudget } from "../state";
@@ -46,6 +47,7 @@ import {
   validateSplit,
 } from "../core/transactions";
 import { preferredAccountId } from "../core/prefs";
+import { addExpenseInNewEnvelope } from "../core/quickExpense";
 import { envelopeSummary } from "../core/budget";
 import { calcToMinor, fromMinor, formatMoney, type Minor } from "../core/money";
 import { WEEKDAY, MONTHS, addDays, dayOf, periodFor } from "../core/dates";
@@ -107,6 +109,7 @@ export function TransactionSheet({
   const [kind, setKind] = useState<"expense" | "income">("expense");
   const [expr, setExpr] = useState("");
   const [envelopeId, setEnvelopeId] = useState<string>("");
+  const [envelopeName, setEnvelopeName] = useState("Groceries");
   const [accountId, setAccountId] = useState<string>("");
   const [day, setDay] = useState(todayKey);
   const [note, setNote] = useState("");
@@ -128,6 +131,7 @@ export function TransactionSheet({
     if (!draft) return;
     setError(null);
     setMore(false);
+    setEnvelopeName("Groceries");
     if (draft.mode === "edit" && editing) {
       setKind(editing.type === "income" ? "income" : "expense");
       setExpr(majorStr(editing.amount, editing.currency));
@@ -162,6 +166,7 @@ export function TransactionSheet({
   const currency = account?.currency ?? s.prefs.currency;
   const envs = useMemo(() => envOptions(s), [s]);
   const accts = useMemo(() => acctOptions(s), [s]);
+  const creatingEnvelope = draft?.mode === "add" && kind === "expense" && envs.length === 0;
   const amount = calcToMinor(expr, currency);
   const canSplit = draft?.mode === "add" && kind === "expense" && activeEnvelopes(s).length >= 2 && !!accountId;
   const valid = amount != null && amount > 0;
@@ -200,7 +205,7 @@ export function TransactionSheet({
       return onClose();
     }
     const envId = envelopeId || null;
-    if (kind === "expense" && !envId) {
+    if (kind === "expense" && !envId && !creatingEnvelope) {
       feedback("error", "error");
       return setError(txnError.no_envelope);
     }
@@ -216,14 +221,16 @@ export function TransactionSheet({
       toast("Changes saved", { label: "Undo", onPress: undo });
       return onClose();
     }
-    const res = addTransaction(s, { type: kind, amount, accountId, envelopeId: envId, note, labels, date: now }, now);
+    const res = creatingEnvelope
+      ? addExpenseInNewEnvelope(s, { envelopeName, amount, accountId, note, labels, date: now }, now)
+      : addTransaction(s, { type: kind, amount, accountId, envelopeId: envId, note, labels, date: now }, now);
     if (res.error) {
       feedback("error", "error");
-      return setError(txnError[res.error]);
+      return setError({ ...txnError, ...envelopeError }[res.error]);
     }
     mutate(() => res.state);
     feedback("success", "success");
-    flashEnvelope(envId);
+    flashEnvelope(res.state.transactions[res.state.transactions.length - 1]?.envelopeId);
     analytics.track("core_action", { feature: kind === "expense" ? "add_expense" : "add_income" });
     analytics.track(kind === "expense" ? "expense_add" : "income_add");
     toast(kind === "expense" ? "Expense added" : "Deposit added", { label: "Undo", onPress: undo });
@@ -300,13 +307,13 @@ export function TransactionSheet({
             </View>
           ) : (
             <View style={styles.previewCard}>
-              <Text style={type.label}>{isTransfer ? transferAccounts : envelopeById(s, envelopeId)?.name ?? (kind === "income" ? "Deposit" : "Choose an envelope below")}</Text>
+              <Text style={type.label}>{isTransfer ? transferAccounts : creatingEnvelope ? `New envelope: ${envelopeName.trim() || "Enter a name below"}` : envelopeById(s, envelopeId)?.name ?? (kind === "income" ? "Deposit" : "Choose an envelope below")}</Text>
               <Text style={[type.caption, styles.amountHint]}>Enter an amount, then tap {saveLabel}.</Text>
             </View>
           )}
           <Text style={[type.caption, { color: palette.danger, minHeight: 20 }]}>{error ?? " "}</Text>
         </View>
-        <Button label={saveLabel} size="lg" icon="check" disabled={!valid} onPress={save} />
+        <Button label={saveLabel} size="lg" icon="check" disabled={!valid || (creatingEnvelope && !envelopeName.trim())} onPress={save} />
       </View>
     }>
       <View style={{ gap: space.md }}>
@@ -327,11 +334,22 @@ export function TransactionSheet({
             />
             <AmountKeypad expr={expr} onExpr={(e) => { setExpr(e); setError(null); }} currency={currency} tone={kind === "income" ? palette.success : palette.ink} />
 
-            <Text style={type.label}>{kind === "expense" ? "Envelope" : "Envelope (optional)"}</Text>
-            {kind === "income" ? (
-              <EnvelopeCardPicker options={[{ value: "", label: "No envelope" }, ...envs]} value={envelopeId} onChange={(v) => { setEnvelopeId(v); setError(null); }} />
+            {creatingEnvelope ? (
+              <View style={{ gap: space.xs }}>
+                <TextField label="Envelope name" value={envelopeName} maxLength={40} onChangeText={(v) => { setEnvelopeName(v); setError(null); }} returnKeyType="done" onSubmitEditing={() => Keyboard.dismiss()} />
+                <Text style={[type.caption, { minHeight: 40, color: envelopeName.trim() ? palette.inkSoft : palette.danger }]}>
+                  {envelopeName.trim() ? "Created when you save. Set a budget later from envelope details." : envelopeError.empty_name}
+                </Text>
+              </View>
             ) : (
-              <EnvelopeCardPicker options={envs} value={envelopeId} onChange={(v) => { setEnvelopeId(v); setError(null); }} />
+              <>
+                <Text style={type.label}>{kind === "expense" ? "Envelope" : "Envelope (optional)"}</Text>
+                {kind === "income" ? (
+                  <EnvelopeCardPicker options={[{ value: "", label: "No envelope" }, ...envs]} value={envelopeId} onChange={(v) => { setEnvelopeId(v); setError(null); }} />
+                ) : (
+                  <EnvelopeCardPicker options={envs} value={envelopeId} onChange={(v) => { setEnvelopeId(v); setError(null); }} />
+                )}
+              </>
             )}
 
             {accts.length > 1 ? (

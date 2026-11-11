@@ -2,11 +2,11 @@
   "expo": {
     "name": "Envelope Mini",
     "slug": "envelope-mini-manual-budget-envelopes",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "orientation": "portrait",
     "android": {
       "package": "com.jeetech.a001",
-      "versionCode": 6,
+      "versionCode": 7,
       "permissions": [],
       "blockedPermissions": [
         "android.permission.READ_EXTERNAL_STORAGE",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { Button, FooterScreen, Icon, Tappable, feedback, palette, radius, space, type } from "../ui";
 import { OptionChips } from "./kit";
@@ -9,21 +9,21 @@ import { seedSamples, startFromScratch } from "../core/onboarding";
 import { setCurrency } from "../core/prefs";
 import { art } from "../art";
 
-const STEPS = 2;
 const START_CUR = ["USD", "EUR", "GBP", "CAD", "AUD", "INR"];
 
 export function OnboardingScreen({ onDone }: { onDone: () => void }) {
   const todayKey = today();
-  const [step, setStep] = useState(0);
+  const finishing = useRef(false);
   const [path, setPath] = useState<"samples" | "scratch">("samples");
   const [currency, setCur] = useState("USD");
 
-  const go = (n: number) => {
-    analytics.track("onboarding_step", { step: n });
-    setStep(n);
-  };
+  useEffect(() => {
+    analytics.track("onboarding_step", { step: 1 });
+  }, []);
 
   const finish = (withSamples: boolean) => {
+    if (finishing.current) return;
+    finishing.current = true;
     mutate((prev) => {
       let st = setCurrency(prev, currency);
       if (withSamples) {
@@ -39,68 +39,40 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
     onDone();
   };
 
-  const dots = (
-    <View style={styles.dots} accessibilityLabel={`Step ${step + 1} of ${STEPS}`}>
-      {Array.from({ length: STEPS }).map((_, i) => (
-        <View key={i} style={[styles.dot, i === step && styles.dotOn]} />
-      ))}
-    </View>
-  );
-
-  const footer = (
-    <>
-      {step < STEPS - 1 ? (
-        <Button label="Continue" size="lg" onPress={() => go(step + 1)} />
-      ) : (
-        <Button label="Open my envelopes" size="lg" icon="check" onPress={() => finish(path === "samples")} />
-      )}
-      <Button label="Skip setup" variant="ghost" sound={null} style={{ borderWidth: 0 }} onPress={() => finish(false)} />
-    </>
-  );
-
   return (
-    <FooterScreen top={dots} footer={footer}>
-      <View style={step === 1 ? styles.bodyTight : styles.body}>
-        {step === 0 ? (
-          <>
-            <Image source={art.onboarding_1_welcome} style={styles.hero} resizeMode="contain" />
-            <Text style={[type.display, styles.center]}>Budget by envelope</Text>
-            <Text style={[type.body, styles.center, { color: palette.inkSoft }]}>
-              Choose an envelope, enter an amount and save. No sign-in or bank links required.
-            </Text>
-            <View style={{ gap: 6 }}>
-              <Text style={[type.label, { textAlign: "center" }]}>Currency</Text>
-              <OptionChips options={START_CUR.map((c) => ({ value: c, label: c }))} value={currency} onChange={setCur} />
-              <Text style={[type.caption, { textAlign: "center" }]}>Used for all your budgets — change it anytime in Settings.</Text>
-            </View>
-          </>
-        ) : (
-          <>
-            <Image source={art.onboarding_2_budgets} style={styles.heroSm} resizeMode="contain" />
-            <Text style={[type.title, styles.center]}>How do you want to start?</Text>
-            <View style={{ gap: space.sm }}>
-              <ChoiceCard
-                icon="star"
-                title="Use sample envelopes"
-                body="Groceries, Fuel and Eating Out with example budgets."
-                selected={path === "samples"}
-                onPress={() => setPath("samples")}
-              />
-              <ChoiceCard
-                icon="envelope"
-                title="Start from scratch"
-                body="Just a Cash account — add your own envelopes."
-                selected={path === "scratch"}
-                onPress={() => setPath("scratch")}
-              />
-            </View>
-            <Text style={[type.body, styles.center, { color: palette.inkSoft }]}>
-              {path === "samples"
-                ? "Next, tap Add expense on the home screen to log a purchase. You can change budgets and rollover anytime in envelope details."
-                : "Next, create your first envelope, then tap Add expense to log a purchase. A Cash account is ready for you."}
-            </Text>
-          </>
-        )}
+    <FooterScreen footer={
+      <>
+        <Button label="Start tracking" size="lg" icon="envelope" onPress={() => finish(path === "samples")} />
+        <Button label="Skip setup" variant="ghost" sound={null} style={{ borderWidth: 0 }} onPress={() => finish(false)} />
+      </>
+    }>
+      <View style={styles.body}>
+        <Image source={art.onboarding_1_welcome} style={styles.hero} resizeMode="contain" />
+        <Text style={[type.title, styles.center]}>Log your first purchase</Text>
+        <Text style={[type.body, styles.center, { color: palette.inkSoft }]}>
+          Tap Add expense, enter the amount and save. No sign-in or bank links required.
+        </Text>
+        <View style={{ gap: 6 }}>
+          <Text style={[type.label, styles.center]}>Currency</Text>
+          <OptionChips options={START_CUR.map((c) => ({ value: c, label: c }))} value={currency} onChange={setCur} />
+          <Text style={[type.caption, styles.center]}>Change it anytime in Settings.</Text>
+        </View>
+        <View style={{ gap: space.sm }}>
+          <ChoiceCard
+            icon="star"
+            title="Use sample envelopes"
+            body="Groceries, Fuel and Eating Out with editable example budgets."
+            selected={path === "samples"}
+            onPress={() => setPath("samples")}
+          />
+          <ChoiceCard
+            icon="envelope"
+            title="Start from scratch"
+            body="Name your first envelope as you save a purchase."
+            selected={path === "scratch"}
+            onPress={() => setPath("scratch")}
+          />
+        </View>
       </View>
     </FooterScreen>
   );
@@ -122,13 +94,8 @@ function ChoiceCard({ icon, title, body, selected, onPress }: { icon: "star" | "
 }
 
 const styles = StyleSheet.create({
-  dots: { flexDirection: "row", gap: 6, alignSelf: "center" },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: palette.border },
-  dotOn: { width: 22, backgroundColor: palette.primary },
-  body: { gap: space.lg },
-  bodyTight: { gap: space.md },
-  hero: { width: "100%", height: 200, alignSelf: "center" },
-  heroSm: { width: "100%", height: 92, alignSelf: "center" },
+  body: { gap: space.md },
+  hero: { width: "100%", height: 80, alignSelf: "center" },
   center: { textAlign: "center" },
   choice: { flexDirection: "row", alignItems: "center", gap: space.md, backgroundColor: palette.surface, borderRadius: radius.lg, padding: space.md, borderWidth: 1.5, borderColor: palette.border },
   choiceOn: { borderColor: palette.primary },

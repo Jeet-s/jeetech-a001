@@ -77,9 +77,6 @@ function Main() {
   const banner = useBannerHeight();
   const [showBanner, setShowBanner] = useState(false);
   const [tab, setTab] = useState<Tab>("envelopes");
-  // Skeleton the envelope list for a beat right after onboarding so the first
-  // frame reads as "loading your envelopes", never a blank screen.
-  const [booting, setBooting] = useState(false);
   const [pro, setPro] = useState<string | null>(null);
   const [locked, setLocked] = useState(() => budgetStore.get().prefs.security.pinEnabled);
   const bgAt = useRef(0);
@@ -126,8 +123,6 @@ function Main() {
       <OnboardingScreen
         onDone={() => {
           setTab("envelopes");
-          setBooting(true);
-          setTimeout(() => setBooting(false), 600);
         }}
       />
     );
@@ -139,7 +134,7 @@ function Main() {
       <View style={styles.root}>
         <View style={styles.root}>
           {tab === "envelopes" ? (
-            <EnvelopesScreen bottomInset={bottom} onPro={openPro} booting={booting} />
+            <EnvelopesScreen bottomInset={bottom} onPro={openPro} />
           ) : tab === "transactions" ? (
             <TransactionsScreen bottomInset={bottom} onPro={openPro} />
           ) : tab === "reports" ? (
